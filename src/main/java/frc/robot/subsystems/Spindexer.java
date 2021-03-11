@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
@@ -109,7 +108,6 @@ public class Spindexer extends SubsystemBase {
             addRequirements(Spindexer.this);
         }
 
-
         // Initalize method
         @Override
         public void initialize() {
@@ -136,5 +134,38 @@ public class Spindexer extends SubsystemBase {
         }
         
     }
+
+    // Spin 360 command
+    public class Spin360Command extends CommandBase {
+        
+        // Variables
+        private double startPos;
+
+        // Constructor
+        public Spin360Command(double rpm) {
+            Spindexer.this.setVelocityReference(Math.abs(rpm));
+            addRequirements(Spindexer.this);
+        }
+
+        // Initialize method
+        @Override
+        public void initialize() {
+            startPos = getAngle();
+        }
+
+        // IsFinished method
+        @Override
+        public boolean isFinished() {
+            return startPos + 360 >= getAngle();
+        }
+
+        // End method
+        @Override
+        public void end(boolean interrupted) {
+            Spindexer.this.disable();
+        }
+
+    }
+
 
 }

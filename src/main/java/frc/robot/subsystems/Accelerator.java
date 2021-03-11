@@ -29,7 +29,7 @@ public class Accelerator extends SubsystemBase {
     }
 
     // Method to enable the accelerator
-    public void enabled(double reference) {
+    public void enable(double reference) {
         setReference(reference);
         enabled = true;
     }
