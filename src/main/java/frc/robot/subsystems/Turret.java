@@ -69,7 +69,7 @@ public class Turret extends SubsystemBase {
         } else {
             motor.setVoltage(0.0);
         }
-        SmartDashboard.putNumber("Turret Encoder", getDistance());
+        SmartDashboard.putNumber("Turret Angle", getDistance());
     }
 
     // Private method to get the closest angle to the turret that is between the range of (-210, 210)
