@@ -50,7 +50,7 @@ public class Turret extends SubsystemBase {
     public void setReference(double reference) {
         this.reference = reference % 360;
         if (this.reference > 180.0) this.reference = -360 + this.reference;
-        if (this.reference < -180.0) this.reference = 360 - Math.abs(this.reference);
+        if (this.reference < -180.0) this.reference = 360 + this.reference;
     }
 
     // Method to check whether you are at the reference of the turret
@@ -90,8 +90,8 @@ public class Turret extends SubsystemBase {
     // Private method to get the starting position of the turret as an angle between (-180, 180)
     private double getStart(double angle, double offset) {
         double returnAngle = (angle - offset) % 360;
-        if (returnAngle > 180.0) returnAngle = -360 + this.reference;
-        if (returnAngle < -180.0) returnAngle = 360 - Math.abs(this.reference);
+        if (returnAngle > 180.0) returnAngle = -360 + returnAngle;
+        if (returnAngle < -180.0) returnAngle = 360 + returnAngle;
         return returnAngle;
     }
     
