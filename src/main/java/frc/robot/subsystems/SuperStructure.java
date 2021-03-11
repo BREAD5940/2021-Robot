@@ -33,8 +33,10 @@ public class SuperStructure extends SubsystemBase {
         public ShootCommand() {
             addRequirements(flywheel, accelerator, spindexer, SuperStructure.this);
             addCommands(
-                new InstantCommand(() -> flywheel.enable(4000), flywheel),
-                new InstantCommand(() -> accelerator.enable(-500), accelerator),
+                new InstantCommand(() -> {
+                    flywheel.setReference(4000);
+                    accelerator.setReference(-500);
+                }, flywheel, accelerator),
                 spindexer.new TurnSpindexerCommand(),
                 new InstantCommand(() -> accelerator.setReference(5000), accelerator),
                 new WaitUntilCommand(() -> flywheel.atReference() && accelerator.atReference()),
@@ -42,8 +44,10 @@ public class SuperStructure extends SubsystemBase {
                     spindexer.new Spin360Command(75),
                     new WaitCommand(0.2)
                 ),
-                new InstantCommand(() -> flywheel.disable(), flywheel),
-                new InstantCommand(() -> accelerator.disable(), accelerator)
+                new InstantCommand(() -> {
+                    flywheel.disable();
+                    accelerator.disable();
+                }, flywheel, accelerator)
             );
         }
 
