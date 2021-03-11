@@ -1,4 +1,4 @@
-package frc.robot.subsystems.drive;
+package frc.robot.subsystems;
 
 import com.kauailabs.navx.frc.AHRS;
 
@@ -19,7 +19,7 @@ public class Drive extends SubsystemBase {
 
     // Method to get the angle of the robot
     public double getAngle() {
-        return gyro.getAngle();
+        return -gyro.getAngle();
     }
 
     // Periodic method

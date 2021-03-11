@@ -1,9 +1,8 @@
-package frc.robot.subsystems.shooter;
-
-import java.util.function.DoubleSupplier;
+package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -20,13 +19,11 @@ public class Turret extends SubsystemBase {
     private final CANSparkMax motor = new CANSparkMax(33, MotorType.kBrushless);
     public final DutyCycleEncoder encoder = new DutyCycleEncoder(1);
     private final PIDController pid = new PIDController(0.05, 0.0, 0.0);
-    private final DoubleSupplier gyroSupplier;
-    private double reference;
+    private double reference = 0.0;
+    private boolean enabled = false;
 
     // Constructor
-    public Turret(DoubleSupplier gyroSupplier) {
-        this.gyroSupplier = gyroSupplier;
-        setReference(gyroSupplier.getAsDouble());
+    public Turret() {
         encoder.setDistancePerRotation(360.0);
         initialPos = encoder.getDistance();
         startPos = getStart(initialPos, offset);
@@ -37,9 +34,20 @@ public class Turret extends SubsystemBase {
     public double getDistance() {
         return -((encoder.getDistance() - initialPos) + startPos);
     }
+
+    // Method to enable the turret
+    public void enable(double reference) {
+        setReference(reference);
+        enabled = true;
+    }
+
+    // Method to disable the turret
+    public void disable() {
+        enabled = false;
+    }
     
     // Method to set the reference of the turret
-    private void setReference(double reference) {
+    public void setReference(double reference) {
         this.reference = reference % 360;
         if (this.reference > 180.0) this.reference = -360 + this.reference;
         if (this.reference < -180.0) this.reference = 360 - Math.abs(this.reference);
@@ -50,13 +58,17 @@ public class Turret extends SubsystemBase {
         return pid.atSetpoint();
     }
 
+
     // In the periodic method of this subsystem set the turret based on the parameters
     @Override
     public void periodic() {
-        setReference(gyroSupplier.getAsDouble());
-        double angle = getSafestPosition(reference, getDistance());
-        double output = MathUtil.clamp(pid.calculate(getDistance(), angle), -6, 6);
-        motor.setVoltage(output);
+        if (enabled) {
+            double angle = getSafestPosition(reference, getDistance());
+            double output = MathUtil.clamp(pid.calculate(getDistance(), angle), -6, 6);
+            motor.setVoltage(output);
+        } else {
+            motor.setVoltage(0.0);
+        }
         SmartDashboard.putNumber("Turret Encoder", getDistance());
     }
 
