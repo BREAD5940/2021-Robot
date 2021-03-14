@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
+import frc.robot.commons.BreadUtil;
 
 // Spindexer class
 public class Spindexer extends SubsystemBase {
@@ -22,7 +23,7 @@ public class Spindexer extends SubsystemBase {
     private final DutyCycleEncoder absEncoder = new DutyCycleEncoder(0);
     private final PIDController positionPid = new PIDController(0.1, 0.0, 0.001);
     private final PIDController velocityPid = new PIDController(0.0001, 0.0, 0.0);
-    private final SimpleMotorFeedforward ff = new SimpleMotorFeedforward(0.0, 12/(5676 * gearing));
+    private final SimpleMotorFeedforward ff = new SimpleMotorFeedforward(0.0, 12.0/(5676.0 * gearing));
     private SpindexerOutput mode = SpindexerOutput.None;
     private double positionRef = 0.0;
     private double velocityRef = 0.0;
@@ -67,7 +68,7 @@ public class Spindexer extends SubsystemBase {
 
     // Method to check whether the spindexer is at its velocity reference
     public boolean atVelocityReference() {
-        return Math.abs(getVelocity() - velocityRef) < 5.0 && mode == SpindexerOutput.Velocity;
+        return BreadUtil.atReference(getVelocity(), velocityRef, 5.0, true) && mode == SpindexerOutput.Velocity;
     }
 
     // Method to check whether the spindexer is at its position reference
@@ -144,8 +145,7 @@ public class Spindexer extends SubsystemBase {
         private double startPos;
 
         // Constructor
-        public Spin360Command(double rpm) {
-            Spindexer.this.setVelocityReference(Math.abs(rpm));
+        public Spin360Command() {
             addRequirements(Spindexer.this);
         }
 
@@ -153,12 +153,13 @@ public class Spindexer extends SubsystemBase {
         @Override
         public void initialize() {
             startPos = getAngle();
+            setVelocityReference(60.0);
         }
 
         // IsFinished method
         @Override
         public boolean isFinished() {
-            return startPos + 360 >= getAngle();
+            return startPos + 360 <= getAngle();
         }
 
         // End method

@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Accelerator;
 import frc.robot.subsystems.Drive;
@@ -12,6 +13,7 @@ import frc.robot.subsystems.Turret;
 public class RobotContainer {
   
   // Variables
+  public final XboxController controller = new XboxController(0);
   public final Drive drive = new Drive();
   public final Turret turret = new Turret();
   public final Spindexer spindexer = new Spindexer();

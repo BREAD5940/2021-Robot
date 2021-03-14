@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
+import frc.robot.commons.BreadUtil;
 
 // Hood class
 public class Hood extends SubsystemBase {
@@ -113,7 +114,7 @@ public class Hood extends SubsystemBase {
         // IsFinished method
         @Override
         public boolean isFinished() {
-            return Math.abs(Hood.this.getVelocity()) < 10.0 && timer.get() >= 0.25;
+            return BreadUtil.atReference(getVelocity(), 0.0, 10.0, true) && timer.get() >= 0.25;
         }
 
         // End method

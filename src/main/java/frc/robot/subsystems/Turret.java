@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
+import frc.robot.commons.BreadUtil;
 
 // Turret class
 public class Turret extends SubsystemBase {
@@ -77,14 +78,9 @@ public class Turret extends SubsystemBase {
         if (angleRef > -150.0 && angleRef < 150.0) {
             return angleRef;
         } else {
-            return angleRef < 0.0 ? calcClosestTo(angleRef, (angleRef + 360), turretAngle) 
-            : calcClosestTo(angleRef, (angleRef - 360), turretAngle);
+            return angleRef < 0.0 ? BreadUtil.closer(angleRef, (angleRef + 360), turretAngle) 
+            : BreadUtil.closer(angleRef, (angleRef - 360), turretAngle);
         }
-    }
-
-    // Private method to calculate the closest number to another number
-    private double calcClosestTo(double num1, double num2, double numRef) {
-        return Math.abs(num1 - numRef) < Math.abs(num2 - numRef) ? num1 : num2;
     }
 
     // Private method to get the starting position of the turret as an angle between (-180, 180)

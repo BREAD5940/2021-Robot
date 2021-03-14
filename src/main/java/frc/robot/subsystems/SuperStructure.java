@@ -40,10 +40,8 @@ public class SuperStructure extends SubsystemBase {
                 spindexer.new TurnSpindexerCommand(),
                 new InstantCommand(() -> accelerator.setReference(5000), accelerator),
                 new WaitUntilCommand(() -> flywheel.atReference() && accelerator.atReference()),
-                new SequentialCommandGroup(
-                    spindexer.new Spin360Command(75),
-                    new WaitCommand(0.2)
-                ),
+                spindexer.new Spin360Command(),
+                new WaitCommand(0.2),
                 new InstantCommand(() -> {
                     flywheel.disable();
                     accelerator.disable();

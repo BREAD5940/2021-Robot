@@ -6,6 +6,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Launch BreadUtil",
+      "request": "launch",
+      "mainClass": "frc.robot.commons.BreadUtil",
+      "projectName": "2021-Robot"
+    },
+    {
+      "type": "java",
       "name": "Launch Hood",
       "request": "launch",
       "mainClass": "frc.robot.subsystems.Hood",
