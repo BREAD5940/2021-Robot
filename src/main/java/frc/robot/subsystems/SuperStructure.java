@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import frc.robot.subsystems.Vision.VisionSupplier;
 
 // Super structure class
 public class SuperStructure extends SubsystemBase {
@@ -20,17 +21,17 @@ public class SuperStructure extends SubsystemBase {
     private final Accelerator accelerator;
     private final Hood hood;
     private final Flywheel flywheel;
-    private final Vision vision;
+    private final VisionSupplier visionSupplier;
     private final Intake intake;
 
     // Constructor
-    public SuperStructure(Turret turret, Spindexer spindexer, Accelerator accelerator, Hood hood, Flywheel flywheel, Intake intake, Vision vision) {
+    public SuperStructure(Turret turret, Spindexer spindexer, Accelerator accelerator, Hood hood, Flywheel flywheel, Intake intake, VisionSupplier visionSupplier) {
         this.turret = turret;
         this.spindexer = spindexer;
         this.accelerator = accelerator;
         this.hood = hood;
         this.flywheel = flywheel;
-        this.vision = vision;
+        this.visionSupplier = visionSupplier;
         this.intake = intake;
     }   
 
@@ -77,7 +78,7 @@ public class SuperStructure extends SubsystemBase {
                 intake.intake(trigger.apply(Hand.kRight));
                 spindexer.setVelocityReference(20.0);
             } else {
-                intake.disable();;
+                intake.disable();
                 spindexer.disable();
             }
             turret.setReference();
@@ -120,8 +121,8 @@ public class SuperStructure extends SubsystemBase {
                     new SequentialCommandGroup(
                         new RunCommand(turret::setReference, turret).withInterrupt(turret::atReference),
                         new RunCommand(() -> {
-                            if (vision.hasTarget()) {
-                                turret.setReference(turret.getDistance() + vision.getYaw());
+                            if (visionSupplier.hasTarget()) {
+                                turret.setReference(turret.getDistance() + visionSupplier.getYaw());
                             } else {
                                 turret.setReference();
                             }

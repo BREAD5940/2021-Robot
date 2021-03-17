@@ -15,31 +15,38 @@ public class Vision extends SubsystemBase {
     private final double cameraHeightMeters = 0.5;
     private final double targetHeightMeters = 1.0;
     private final double cameraPitchRadians = Units.degreesToRadians(23.5);
+    public final VisionSupplier visionSupplier = new VisionSupplier();
     
-    // Method to get the yaw
-    public Double getYaw() {
-        if (hasTarget()) return -camera.getLatestResult().getBestTarget().getYaw();
-        return null;
-    }
+    
+    // Vision supplier class
+    public class VisionSupplier {
 
-    // Method to get the distance 
-    public Double getDistance() {
-        if (hasTarget()) {
-            PhotonTrackedTarget target = camera.getLatestResult().getBestTarget();
-            return PhotonUtils.calculateDistanceToTargetMeters(
-                cameraHeightMeters, 
-                targetHeightMeters, 
-                cameraPitchRadians, 
-                target.getPitch()
-            );
+        // Method to get the yaw
+        public Double getYaw() {
+            return hasTarget() ? -camera.getLatestResult().getBestTarget().getYaw() : null;
         }
-        return null;
-    }
 
-    // Method to check whether vision has targets
-    public boolean hasTarget() {
-        PhotonPipelineResult result = camera.getLatestResult();
-        return result.hasTargets();
+        // Method to get the distance 
+        public Double getDistance() {
+            if (hasTarget()) {
+                PhotonTrackedTarget target = camera.getLatestResult().getBestTarget();
+                return PhotonUtils.calculateDistanceToTargetMeters(
+                    cameraHeightMeters, 
+                    targetHeightMeters, 
+                    cameraPitchRadians, 
+                    target.getPitch()
+                );
+            }
+            return null;
+        }
+
+        // Method to check whether vision has targets
+        public boolean hasTarget() {
+            PhotonPipelineResult result = camera.getLatestResult();
+            return result.hasTargets();
+        }
+
     }
+    
 
 }

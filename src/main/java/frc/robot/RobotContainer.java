@@ -36,7 +36,7 @@ public class RobotContainer {
     hood, 
     flywheel, 
     intake,
-    vision
+    vision.visionSupplier
   );
 
   // Constructor

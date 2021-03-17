@@ -31,7 +31,6 @@ public class Spindexer extends SubsystemBase {
     // Constructor
     public Spindexer() {
         motor.setSmartCurrentLimit(12);
-        motor.setSecondaryCurrentLimit(14);
         absEncoder.setDistancePerRotation(360.0);
         positionPid.setTolerance(5, 1);
         velocityPid.setTolerance(1);
