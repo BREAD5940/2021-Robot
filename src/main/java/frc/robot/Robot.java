@@ -1,6 +1,9 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -15,7 +18,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer();
-    m_robotContainer.drive.reset();
+    m_robotContainer.drive.reset(new Pose2d(new Translation2d(), new Rotation2d()));
   }
 
   // Robot periodic
@@ -26,7 +29,14 @@ public class Robot extends TimedRobot {
 
   // Disabled init
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    CommandScheduler.getInstance().cancelAll();
+    m_robotContainer.flywheel.disable();
+    m_robotContainer.accelerator.disable();
+    m_robotContainer.turret.disable();
+    m_robotContainer.intake.disable();
+    m_robotContainer.spindexer.disable();
+  }
 
   // Disabled periodic
   @Override
@@ -51,6 +61,8 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    m_robotContainer.drive.reset(new Pose2d(new Translation2d(), new Rotation2d()));
+    m_robotContainer.superStructure.new HomingRoutine().schedule();
   }
 
   // Teleop Periodic

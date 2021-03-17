@@ -1,8 +1,8 @@
 package frc.robot.subsystems;
 
+import java.util.function.DoubleSupplier;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -14,21 +14,24 @@ import frc.robot.commons.BreadUtil;
 public class Turret extends SubsystemBase {
 
     // Variables
-    public final double offset = 277.0;
+    /* Center to turret is 7.5 inches */
+    private final DoubleSupplier defaultRefSupplier;
+    public final double offset = 28.45;
     private final double initialPos;
     private final double startPos;
     private final CANSparkMax motor = new CANSparkMax(33, MotorType.kBrushless);
     public final DutyCycleEncoder encoder = new DutyCycleEncoder(1);
-    private final PIDController pid = new PIDController(0.05, 0.0, 0.0);
+    private final PIDController pid = new PIDController(0.2, 0.0, 0.0001);
     private double reference = 0.0;
-    private boolean enabled = false;
+    private TurretOutput mode = TurretOutput.None;
 
     // Constructor
-    public Turret() {
+    public Turret(DoubleSupplier defaultRefSupplier) {
         encoder.setDistancePerRotation(360.0);
         initialPos = encoder.getDistance();
         startPos = getStart(initialPos, offset);
         pid.setTolerance(3);
+        this.defaultRefSupplier = defaultRefSupplier;
     }
 
     // Method to get the distance of the encoder
@@ -36,22 +39,22 @@ public class Turret extends SubsystemBase {
         return -((encoder.getDistance() - initialPos) + startPos);
     }
 
-    // Method to enable the turret
-    public void enable(double reference) {
-        setReference(reference);
-        enabled = true;
-    }
-
     // Method to disable the turret
     public void disable() {
-        enabled = false;
+        mode = TurretOutput.None;
     }
     
     // Method to set the reference of the turret
     public void setReference(double reference) {
+        mode = TurretOutput.Position;
         this.reference = reference % 360;
         if (this.reference > 180.0) this.reference = -360 + this.reference;
         if (this.reference < -180.0) this.reference = 360 + this.reference;
+    }
+
+    // Overload to set the reference of the turret using the default reference supplier
+    public void setReference() {
+        setReference(defaultRefSupplier.getAsDouble());
     }
 
     // Method to check whether you are at the reference of the turret
@@ -63,9 +66,9 @@ public class Turret extends SubsystemBase {
     // In the periodic method of this subsystem set the turret based on the parameters
     @Override
     public void periodic() {
-        if (enabled) {
+        if (mode == TurretOutput.Position) {
             double angle = getSafestPosition(reference, getDistance());
-            double output = MathUtil.clamp(pid.calculate(getDistance(), angle), -6, 6);
+            double output = MathUtil.clamp(pid.calculate(getDistance(), angle), -3, 3);
             motor.setVoltage(output);
         } else {
             motor.setVoltage(0.0);
@@ -75,7 +78,7 @@ public class Turret extends SubsystemBase {
 
     // Private method to get the closest angle to the turret that is between the range of (-210, 210)
     private double getSafestPosition(double angleRef, double turretAngle) {
-        if (angleRef > -150.0 && angleRef < 150.0) {
+        if (angleRef > -165.0 && angleRef < 165.0) {
             return angleRef;
         } else {
             return angleRef < 0.0 ? BreadUtil.closer(angleRef, (angleRef + 360), turretAngle) 
@@ -89,6 +92,12 @@ public class Turret extends SubsystemBase {
         if (returnAngle > 180.0) returnAngle = -360 + returnAngle;
         if (returnAngle < -180.0) returnAngle = 360 + returnAngle;
         return returnAngle;
+    }
+
+    // Turret output enum
+    public enum TurretOutput {
+        Position,
+        None
     }
     
 }

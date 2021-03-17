@@ -16,8 +16,8 @@ import frc.robot.commons.BreadUtil;
 public class Spindexer extends SubsystemBase {
 
     // Variables
-    private final double gearing = 1/((60/14)*(50/18)*(50/20));
-    private final double offset = 29.0;
+    private final double gearing = 1.0/((60.0/14)*(50.0/18)*(50.0/20));
+    private final double offset = 42.8;
     private final CANSparkMax motor = new CANSparkMax(34, MotorType.kBrushless);
     private final CANEncoder motorEncoder = motor.getEncoder();
     private final DutyCycleEncoder absEncoder = new DutyCycleEncoder(0);
@@ -66,6 +66,11 @@ public class Spindexer extends SubsystemBase {
         positionRef = 0.0;
     }
 
+    // Method to set the ramp rate of the spindexer
+    public void setRampRate(double time) {
+        motor.setOpenLoopRampRate(time);
+    }
+
     // Method to check whether the spindexer is at its velocity reference
     public boolean atVelocityReference() {
         return BreadUtil.atReference(getVelocity(), velocityRef, 5.0, true) && mode == SpindexerOutput.Velocity;
@@ -80,17 +85,19 @@ public class Spindexer extends SubsystemBase {
     @Override
     public void periodic() {
         if (mode == SpindexerOutput.Position) {
-            double output = MathUtil.clamp(positionPid.calculate(getAngle(), positionRef), -7, 7);
+            double output = MathUtil.clamp(positionPid.calculate(getAngle(), positionRef), -6, 6);
             motor.setVoltage(output);
         } else if (mode == SpindexerOutput.Velocity) {
             double ffOutput = ff.calculate(velocityRef);
             double pidOutput = velocityPid.calculate(getVelocity(), velocityRef);
             double output = MathUtil.clamp(ffOutput + pidOutput, -12, 12);
             motor.setVoltage(output);
+            System.out.println("Spindexer FF: " + ffOutput + " Spindexer pid: " + pidOutput);
         } else {
             motor.setVoltage(0.0);
         }
         SmartDashboard.putNumber("Spindexer angle", getAngle());
+        SmartDashboard.putNumber("Spindexer speed", getVelocity());
     }
 
     // Spindexer ouput enum
@@ -153,7 +160,8 @@ public class Spindexer extends SubsystemBase {
         @Override
         public void initialize() {
             startPos = getAngle();
-            setVelocityReference(60.0);
+            setVelocityReference(120.0);
+            Spindexer.this.setRampRate(1.0);
         }
 
         // IsFinished method
@@ -166,6 +174,7 @@ public class Spindexer extends SubsystemBase {
         @Override
         public void end(boolean interrupted) {
             Spindexer.this.disable();
+            Spindexer.this.setRampRate(0.0);
         }
 
     }

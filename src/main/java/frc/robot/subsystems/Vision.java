@@ -4,7 +4,6 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPipelineResult;
 import org.photonvision.PhotonTrackedTarget;
 import org.photonvision.PhotonUtils;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -16,8 +15,6 @@ public class Vision extends SubsystemBase {
     private final double cameraHeightMeters = 0.5;
     private final double targetHeightMeters = 1.0;
     private final double cameraPitchRadians = Units.degreesToRadians(23.5);
-    private double rotErrorTolerance = 38.0;
-    private double rotError;
     
     // Method to get the yaw
     public Double getYaw() {
@@ -39,16 +36,10 @@ public class Vision extends SubsystemBase {
         return null;
     }
 
-    // Method to update the camera reference estimate
-    public void updateRots(Rotation2d cameraRotRef, Rotation2d cameraRot) {
-        rotError = cameraRot.minus(cameraRotRef).getDegrees();
-    }
-
     // Method to check whether vision has targets
     public boolean hasTarget() {
         PhotonPipelineResult result = camera.getLatestResult();
-        if (!result.hasTargets()) return false;
-        return Math.abs(rotError) < rotErrorTolerance;
+        return result.hasTargets();
     }
 
 }
