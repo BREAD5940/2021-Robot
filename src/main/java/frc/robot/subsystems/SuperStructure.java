@@ -57,13 +57,13 @@ public class SuperStructure extends SubsystemBase {
         
         // Constructor 
         public IdleCommand(Function<Hand, Double> trigger) {
+            addRequirements(turret, hood, spindexer, accelerator, flywheel, intake, SuperStructure.this);
             this.trigger = trigger;
         }
 
         // Initialize method
         @Override
         public void initialize() {
-            addRequirements(turret, hood, spindexer, accelerator, flywheel, intake, SuperStructure.this);
             flywheel.disable();
             accelerator.disable();
             spindexer.disable();

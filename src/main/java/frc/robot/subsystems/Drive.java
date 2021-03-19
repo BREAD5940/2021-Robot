@@ -110,6 +110,28 @@ public class Drive extends SubsystemBase {
         br.driveMotor.setIdleMode(mode);
     }
 
+    // Method to get the outputs of the drive motors
+    public double[] getOutputs() {
+        double[] outputs = {
+            fl.driveMotor.getAppliedOutput(),
+            fr.driveMotor.getAppliedOutput(),
+            bl.driveMotor.getAppliedOutput(),
+            br.driveMotor.getAppliedOutput()
+        };
+        return outputs;
+    }
+
+    // Method to get the velocities of the drive motors
+    public double[] getVelocities() {
+        double[] velocities = {
+            fl.getVelocity(),
+            fr.getVelocity(),
+            bl.getVelocity(),
+            br.getVelocity()
+        };
+        return velocities;
+    }
+
     // Method to get the current position of the robot
     public Pose2d getPose() {
         return pose;
@@ -137,7 +159,7 @@ public class Drive extends SubsystemBase {
     
         // Variables
         private final double wheelRadius = 0.0508;
-        public final CANSparkMax driveMotor;
+        private final CANSparkMax driveMotor;
         private final CANSparkMax turnMotor;
         private final CANEncoder driveEncoder;
         private final AnalogEncoder turnEncoder;

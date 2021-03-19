@@ -1,5 +1,7 @@
 package frc.robot;
 
+import com.revrobotics.CANSparkMax.IdleMode;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
@@ -49,6 +51,7 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
+    m_robotContainer.drive.setIdleModes(IdleMode.kBrake);
   }
 
   // Autonomus periodic
@@ -62,6 +65,7 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
     m_robotContainer.drive.reset(new Pose2d(new Translation2d(), new Rotation2d()));
+    m_robotContainer.drive.setIdleModes(IdleMode.kBrake);
     m_robotContainer.superStructure.new HomingRoutine().schedule();
   }
 
