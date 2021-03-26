@@ -29,6 +29,7 @@ public class Hood extends SubsystemBase {
     public Hood() {
         setCurrentLimit(5, 10);
         absEncoder.setDistancePerRotation(24.0);
+        pid.setTolerance(2.0, 1.0);
     }
 
     // Method to get the rpm of the integrated motor encoder 
@@ -50,7 +51,7 @@ public class Hood extends SubsystemBase {
     // Method to set the position reference of the hood
     public void setPositionReference(double position) {
         mode = HoodOutput.Position;
-        positionRef = MathUtil.clamp(position, 0, 42);
+        positionRef = MathUtil.clamp(position, -20.0, 42);
     }
 
     // Method to disable the hood

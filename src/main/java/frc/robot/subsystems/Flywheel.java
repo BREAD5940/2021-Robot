@@ -15,7 +15,7 @@ public class Flywheel extends SubsystemBase {
     private final WPI_TalonFX leftMotor = new WPI_TalonFX(22);
     private final WPI_TalonFX rightMotor = new WPI_TalonFX(23);
     private final Encoder encoder = new Encoder(3, 4);
-    private final PIDController pid = new PIDController(0.001, 0.0, 0.0);
+    private final PIDController pid = new PIDController(0.02, 0.0, 0.0);
     private final SimpleMotorFeedforward ff = new SimpleMotorFeedforward(0.72, 0.00235109717);
     private FlywheelOutput mode = FlywheelOutput.None;
     private double reference = 0.0;
@@ -34,12 +34,18 @@ public class Flywheel extends SubsystemBase {
     // Method to disable the flywheel
     public void disable() {
         mode = FlywheelOutput.None;
+        reference = 0.0;
     }
 
     // Method to set the reference of the flywheel
     public void setReference(double reference) {
         mode = FlywheelOutput.Velocity;
         this.reference = reference;
+    }
+
+    // Method to get the reference of the flywheel
+    public double getReference() {
+        return this.reference;
     }
 
     // Method to check if the flywheel is at its reference
@@ -60,7 +66,7 @@ public class Flywheel extends SubsystemBase {
             rightMotor.setVoltage(0.0);
             leftMotor.setVoltage(0.0);
         }
-        SmartDashboard.putNumber("Flywheel Speed", getVelocity());
+        SmartDashboard.putNumber("Flywheel Velocity", getVelocity());
     }
 
     // Flywheel output enum

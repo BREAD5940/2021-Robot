@@ -23,7 +23,7 @@ public class RobotContainer {
   public final XboxController controller = new XboxController(0);
   public final Vision vision = new Vision();
   public final Drive drive = new Drive();
-  public final Turret turret = new Turret(() -> drive.getAngle() + 90);
+  public final Turret turret = new Turret(() -> -drive.getDistance() + 90);
   public final Spindexer spindexer = new Spindexer();
   public final Accelerator accelerator = new Accelerator();
   public final Hood hood = new Hood();
@@ -53,7 +53,11 @@ public class RobotContainer {
     );
 
     new JoystickButton(controller, Button.kA.value).whenPressed(
-      superStructure.new ShootCommand()
+      superStructure.new ShootCommand(false)
+    ); 
+    
+    new JoystickButton(controller, Button.kB.value).whenPressed(
+      superStructure.new ShootCommand(true)
     );
 
   }

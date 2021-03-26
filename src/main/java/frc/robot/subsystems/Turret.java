@@ -16,21 +16,24 @@ public class Turret extends SubsystemBase {
     // Variables
     /* Center to turret is 7.5 inches */
     private final DoubleSupplier defaultRefSupplier;
-    public final double offset = 28.45;
+    public final double offset = 350.1;
     private final double initialPos;
     private final double startPos;
     private final CANSparkMax motor = new CANSparkMax(33, MotorType.kBrushless);
     public final DutyCycleEncoder encoder = new DutyCycleEncoder(1);
     private final PIDController pid = new PIDController(0.2, 0.0, 0.0001);
+    private final PIDController visionPid = new PIDController(0.2, 0.0, 0.0001);
     private double reference = 0.0;
+    private boolean vision = false;
     private TurretOutput mode = TurretOutput.None;
 
     // Constructor
     public Turret(DoubleSupplier defaultRefSupplier) {
         encoder.setDistancePerRotation(360.0);
         initialPos = encoder.getDistance();
-        startPos = getStart(initialPos, offset);
-        pid.setTolerance(3);
+        startPos = BreadUtil.angleTo180Range(initialPos - offset);
+        pid.setTolerance(2);
+        visionPid.setTolerance(1);
         this.defaultRefSupplier = defaultRefSupplier;
     }
 
@@ -42,24 +45,24 @@ public class Turret extends SubsystemBase {
     // Method to disable the turret
     public void disable() {
         mode = TurretOutput.None;
+        reference = 0.0;
     }
     
     // Method to set the reference of the turret
-    public void setReference(double reference) {
+    public void setReference(double reference, boolean vision) {
+        this.vision = vision;
         mode = TurretOutput.Position;
-        this.reference = reference % 360;
-        if (this.reference > 180.0) this.reference = -360 + this.reference;
-        if (this.reference < -180.0) this.reference = 360 + this.reference;
+        this.reference = BreadUtil.angleTo180Range(reference);
     }
 
     // Overload to set the reference of the turret using the default reference supplier
     public void setReference() {
-        setReference(defaultRefSupplier.getAsDouble());
+        setReference(defaultRefSupplier.getAsDouble(), false);
     }
 
     // Method to check whether you are at the reference of the turret
     public boolean atReference() {
-        return pid.atSetpoint();
+        return vision ? visionPid.atSetpoint() : pid.atSetpoint();
     }
 
 
@@ -68,12 +71,12 @@ public class Turret extends SubsystemBase {
     public void periodic() {
         if (mode == TurretOutput.Position) {
             double angle = getSafestPosition(reference, getDistance());
-            double output = MathUtil.clamp(pid.calculate(getDistance(), angle), -3, 3);
+            double output = MathUtil.clamp(vision ? visionPid.calculate(getDistance(), angle) : pid.calculate(getDistance(), angle), -3, 3);
             motor.setVoltage(output);
         } else {
             motor.setVoltage(0.0);
         }
-        SmartDashboard.putNumber("Turret Angle", getDistance());
+        SmartDashboard.putNumber("Turret Angle", encoder.getDistance());
     }
 
     // Private method to get the closest angle to the turret that is between the range of (-210, 210)
@@ -84,14 +87,6 @@ public class Turret extends SubsystemBase {
             return angleRef < 0.0 ? BreadUtil.closer(angleRef, (angleRef + 360), turretAngle) 
             : BreadUtil.closer(angleRef, (angleRef - 360), turretAngle);
         }
-    }
-
-    // Private method to get the starting position of the turret as an angle between (-180, 180)
-    private double getStart(double angle, double offset) {
-        double returnAngle = (angle - offset) % 360;
-        if (returnAngle > 180.0) returnAngle = -360 + returnAngle;
-        if (returnAngle < -180.0) returnAngle = 360 + returnAngle;
-        return returnAngle;
     }
 
     // Turret output enum

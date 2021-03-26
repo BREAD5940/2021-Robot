@@ -32,12 +32,18 @@ public class Accelerator extends SubsystemBase {
     // Method to disable the accelerator
     public void disable() {
         mode = AcceleratorOutput.None;
+        reference = 0.0;
     }
     
     // Method to set the reference of the accelerator
     public void setReference(double reference) {
         mode = AcceleratorOutput.Velocity;
         this.reference = reference;
+    }
+
+    // Method to get the reference of the accelerator
+    public double getReference() {
+        return this.reference;
     }
 
     // Method to check whether the accelerator is at its reference
@@ -49,7 +55,10 @@ public class Accelerator extends SubsystemBase {
     @Override
     public void periodic() {
         if (mode == AcceleratorOutput.Velocity) {
-            double pidOutput = pid.calculate(getVelocity(), reference);
+            double pidOutput = 0.0;
+            if (Math.abs(this.reference) > 100) { 
+                pidOutput = pid.calculate(getVelocity(), reference);
+            }
             double ffOutput = ff.calculate(reference);
             double output = MathUtil.clamp(pidOutput + ffOutput, -12, 12);
             motor.setVoltage(-output);

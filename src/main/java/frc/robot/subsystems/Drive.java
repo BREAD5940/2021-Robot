@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
+import frc.robot.commons.BreadUtil;
 
 // Drive class
 public class Drive extends SubsystemBase {
@@ -44,9 +45,9 @@ public class Drive extends SubsystemBase {
             Units.degreesToRadians(120.0))
         )
     );
-
     private static final double baseWidth = Units.inchesToMeters(27.0);
     private static final double baseLength = Units.inchesToMeters(32.5);
+    private final double maxSpeedMetersPerSecond = 12.0/2.82;
     private static final double centerToCorner = Math.sqrt((baseWidth * baseWidth) + (baseLength * baseLength)) / 2.0;
     private final Translation2d flLoc = new Translation2d(baseLength / 2.0, baseWidth / 2.0);
     private final Translation2d frLoc = new Translation2d(baseLength / 2.0, -baseWidth / 2.0);
@@ -74,11 +75,12 @@ public class Drive extends SubsystemBase {
             states[2] = new SwerveModuleState(0.0, new Rotation2d(-crossAngle));
             states[3] = new SwerveModuleState(0.0, new Rotation2d(crossAngle));
         }
-        SwerveDriveKinematics.normalizeWheelSpeeds(states, output == Output.PERCENT ? 1.0 : 12.0/2.9);
+        SwerveDriveKinematics.normalizeWheelSpeeds(states, output == Output.PERCENT ? 1.0 : maxSpeedMetersPerSecond);
         fl.setDesiredState(states[0], output);
         fr.setDesiredState(states[1], output);
         bl.setDesiredState(states[2], output);
         br.setDesiredState(states[3], output);
+        SmartDashboard.putNumber("FL Setpoint", states[0].speedMetersPerSecond);
     }
 
     // Method to update odometry
@@ -138,8 +140,8 @@ public class Drive extends SubsystemBase {
     }
 
     // Method to get the current angle of the robot
-    public double getAngle() {
-        return -gyro.getAngle();
+    public double getDistance() {
+        return BreadUtil.angleTo180Range(-gyro.getAngle());
     }
 
     // Periodic method
@@ -164,8 +166,8 @@ public class Drive extends SubsystemBase {
         private final CANEncoder driveEncoder;
         private final AnalogEncoder turnEncoder;
         private final PIDController turnPID = new PIDController(0.5, 0.0, 0.0001);
-        private final PIDController drivePID = new PIDController(0.5, 0.0, 0.0);
-        private final SimpleMotorFeedforward driveFF = new SimpleMotorFeedforward(0.15, 2.9, 0.3);
+        private final PIDController drivePID = new PIDController(0.01, 0.0, 0.0);
+        private final SimpleMotorFeedforward driveFF = new SimpleMotorFeedforward(0.0, 2.82);
         private final boolean velEncoderReversed;
         private final boolean driveReversed;
     
@@ -249,10 +251,10 @@ public class Drive extends SubsystemBase {
         @Override
         public void execute() {
             Drive.this.setSpeeds(
-                -yFunc.apply(Hand.kRight), 
-                -xFunc.apply(Hand.kRight), 
-                -xFunc.apply(Hand.kLeft) / centerToCorner, 
-                Output.PERCENT
+                -yFunc.apply(Hand.kRight) * maxSpeedMetersPerSecond, 
+                -xFunc.apply(Hand.kRight) * maxSpeedMetersPerSecond, 
+                -(xFunc.apply(Hand.kLeft) * maxSpeedMetersPerSecond) / centerToCorner, 
+                Output.VELOCITY
             );
         }
 
