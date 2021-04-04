@@ -54,17 +54,17 @@ public class Accelerator extends SubsystemBase {
     // Periodic method
     @Override
     public void periodic() {
-        if (mode == AcceleratorOutput.Velocity) {
-            double pidOutput = 0.0;
-            if (Math.abs(this.reference) > 100) { 
-                pidOutput = pid.calculate(getVelocity(), reference);
-            }
-            double ffOutput = ff.calculate(reference);
-            double output = MathUtil.clamp(pidOutput + ffOutput, -12, 12);
-            motor.setVoltage(-output);
-        } else {
-            motor.setVoltage(0.0);
-        }
+        // if (mode == AcceleratorOutput.Velocity) {
+        //     double pidOutput = 0.0;
+        //     if (Math.abs(this.reference) > 100) { 
+        //         pidOutput = pid.calculate(getVelocity(), reference);
+        //     }
+        //     double ffOutput = ff.calculate(reference);
+        //     double output = MathUtil.clamp(pidOutput + ffOutput, -12, 12);
+        //     motor.setVoltage(-output);
+        // } else {
+        //     motor.setVoltage(0.0);
+        // }
         SmartDashboard.putNumber("Accelerator Velocity", getVelocity());
     }
 

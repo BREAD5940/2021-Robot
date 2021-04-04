@@ -85,17 +85,17 @@ public class Spindexer extends SubsystemBase {
     // Periodic method
     @Override
     public void periodic() {
-        if (mode == SpindexerOutput.Position) {
-            double output = MathUtil.clamp(positionPid.calculate(getDistance(), positionRef), -6, 6);
-            motor.setVoltage(output);
-        } else if (mode == SpindexerOutput.Velocity) {
-            double ffOutput = ff.calculate(velocityRef);
-            double pidOutput = velocityPid.calculate(getVelocity(), velocityRef);
-            double output = MathUtil.clamp(ffOutput + pidOutput, -12, 12);
-            motor.setVoltage(output);
-        } else {
-            motor.setVoltage(0.0);
-        }
+        // if (mode == SpindexerOutput.Position) {
+        //     double output = MathUtil.clamp(positionPid.calculate(getDistance(), positionRef), -6, 6);
+        //     motor.setVoltage(output);
+        // } else if (mode == SpindexerOutput.Velocity) {
+        //     double ffOutput = ff.calculate(velocityRef);
+        //     double pidOutput = velocityPid.calculate(getVelocity(), velocityRef);
+        //     double output = MathUtil.clamp(ffOutput + pidOutput, -12, 12);
+        //     motor.setVoltage(output);
+        // } else {
+        //     motor.setVoltage(0.0);
+        // }
         SmartDashboard.putNumber("Spindexer angle", getDistance());
         SmartDashboard.putNumber("Spindexer speed", getVelocity());
     }

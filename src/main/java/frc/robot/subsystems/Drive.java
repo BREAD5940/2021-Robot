@@ -31,16 +31,18 @@ import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
-import frc.robot.commons.BreadUtil;
 
 // Drive class
 public class Drive extends SubsystemBase {
 
     // Variables
+    private boolean lockTranslationHeading = false;
+    private double lockTranslationTarget = 0.0; 
+    private final PIDController lockTranslationController = new PIDController(0.01, 0, 0);
     private final HolonomicDriveController autoController = new HolonomicDriveController(
-        new PIDController(4.0, 0.0, 0.0), 
-        new PIDController(4.0, 0.0, 0.0), 
-        new ProfiledPIDController(4.0, 0.0, 0.0, new TrapezoidProfile.Constraints(
+        new PIDController(1.0, 0.0, 0.0), 
+        new PIDController(1.0, 0.0, 0.0), 
+        new ProfiledPIDController(1.0, 0.0, 0.0, new TrapezoidProfile.Constraints(
             Units.degreesToRadians(180.0), 
             Units.degreesToRadians(120.0))
         )
@@ -49,16 +51,16 @@ public class Drive extends SubsystemBase {
     private static final double baseLength = Units.inchesToMeters(32.5);
     private final double maxSpeedMetersPerSecond = 12.0/2.82;
     private static final double centerToCorner = Math.sqrt((baseWidth * baseWidth) + (baseLength * baseLength)) / 2.0;
-    private final Translation2d flLoc = new Translation2d(baseLength / 2.0, baseWidth / 2.0);
-    private final Translation2d frLoc = new Translation2d(baseLength / 2.0, -baseWidth / 2.0);
-    private final Translation2d blLoc = new Translation2d(-baseLength / 2.0, baseWidth / 2.0);
-    private final Translation2d brLoc = new Translation2d(-baseLength / 2.0, -baseWidth / 2.0);
-    private final SwerveModule fl = new SwerveModule(26, 25, 3, Units.degreesToRadians(49.1), false, false);
-    private final SwerveModule fr = new SwerveModule(42, 41, 0, Units.degreesToRadians(43.7), true, false);
-    private final SwerveModule bl = new SwerveModule(28, 27, 2, Units.degreesToRadians(76.1), false, false);
-    private final SwerveModule br = new SwerveModule(29, 30, 1, Units.degreesToRadians(130.8), true, true);
+    public static final Translation2d flLoc = new Translation2d(baseLength / 2.0, baseWidth / 2.0);
+    public static final Translation2d frLoc = new Translation2d(baseLength / 2.0, -baseWidth / 2.0);
+    public static final Translation2d blLoc = new Translation2d(-baseLength / 2.0, baseWidth / 2.0);
+    public static final Translation2d brLoc = new Translation2d(-baseLength / 2.0, -baseWidth / 2.0);
+    private final SwerveModule fl = new SwerveModule(26, 25, 3, Units.degreesToRadians(43.5), false, false);
+    private final SwerveModule fr = new SwerveModule(42, 41, 0, Units.degreesToRadians(43.1), true, true);
+    private final SwerveModule bl = new SwerveModule(28, 27, 2, Units.degreesToRadians(78.8), false, false);
+    private final SwerveModule br = new SwerveModule(29, 30, 1, Units.degreesToRadians(133.7), true, true);
     private final AHRS gyro = new AHRS(SPI.Port.kMXP);
-    private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
+    public static final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
         flLoc, frLoc, blLoc, brLoc);
     private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, gyro.getRotation2d());
     private Pose2d pose = odometry.getPoseMeters();
@@ -66,9 +68,26 @@ public class Drive extends SubsystemBase {
 
     // Method to drive
     public void setSpeeds(double xSpeed, double ySpeed, double rot, Output output) {
-        SwerveModuleState[] states;
-        states = kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, gyro.getRotation2d()));
-        if (Math.abs(xSpeed) < 0.01 && Math.abs(ySpeed) < 0.01 && Math.abs(rot) < 0.01) {
+        SwerveModuleState[] states = new SwerveModuleState[4];
+        if (!(Math.abs(rot) < 0.01)) {
+            lockTranslationHeading = false;
+            states = kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, pose.getRotation()));
+        } else if (Math.abs(rot) < 0.01 && (Math.abs(xSpeed) >= 0.01 || Math.abs(ySpeed) >= 0.01)) {
+            if (!lockTranslationHeading) {
+                lockTranslationHeading = true;
+                lockTranslationTarget = getDistance();
+            }
+            double omega = lockTranslationController.calculate(getDistance(), lockTranslationTarget);
+            states = kinematics.toSwerveModuleStates(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                    xSpeed,
+                    ySpeed,
+                    omega,
+                    pose.getRotation()
+                )
+            );
+        } else {
+            lockTranslationHeading = false;
             double crossAngle = new Rotation2d(baseLength, baseWidth).getRadians();
             states[0] = new SwerveModuleState(0.0, new Rotation2d(crossAngle));
             states[1] = new SwerveModuleState(0.0, new Rotation2d(-crossAngle));
@@ -134,6 +153,17 @@ public class Drive extends SubsystemBase {
         return velocities;
     }
 
+    // Method to get the angles of the modules
+    public double[] getAngles() {
+        double[] angles = {
+            fl.getModuleAngle(),
+            fr.getModuleAngle(),
+            bl.getModuleAngle(),
+            br.getModuleAngle()
+        };
+        return angles;
+    }
+
     // Method to get the current position of the robot
     public Pose2d getPose() {
         return pose;
@@ -141,13 +171,18 @@ public class Drive extends SubsystemBase {
 
     // Method to get the current angle of the robot
     public double getDistance() {
-        return BreadUtil.angleTo180Range(-gyro.getAngle());
+        return -gyro.getAngle();
     }
 
     // Periodic method
     @Override
     public void periodic() {
         updateOdometry();
+        double[] angles = getAngles();
+        SmartDashboard.putNumber("FL", angles[0]);   
+        SmartDashboard.putNumber("FR", angles[1]);     
+        SmartDashboard.putNumber("BL", angles[2]);    
+        SmartDashboard.putNumber("BR", angles[3]);    
     }
 
     // Output Enum
@@ -186,6 +221,11 @@ public class Drive extends SubsystemBase {
         public double getVelocity() {
             return velEncoderReversed ? -(((driveEncoder.getVelocity() * (1.0/7.04))/60.0) * 2 * Math.PI * wheelRadius) : 
             (((driveEncoder.getVelocity() * (1.0/7.04))/60.0) * 2 * Math.PI * wheelRadius);
+        }
+
+        // Method to get the module angle
+        public double getModuleAngle() {
+            return turnEncoder.get();
         }
     
         // Method to get the state of this module
@@ -251,10 +291,10 @@ public class Drive extends SubsystemBase {
         @Override
         public void execute() {
             Drive.this.setSpeeds(
-                -yFunc.apply(Hand.kRight) * maxSpeedMetersPerSecond, 
-                -xFunc.apply(Hand.kRight) * maxSpeedMetersPerSecond, 
-                -(xFunc.apply(Hand.kLeft) * maxSpeedMetersPerSecond) / centerToCorner, 
-                Output.VELOCITY
+                -Math.signum(yFunc.apply(Hand.kRight)) * Math.abs(Math.pow(yFunc.apply(Hand.kRight), 3)), 
+                -Math.signum(xFunc.apply(Hand.kRight)) * Math.abs(Math.pow(xFunc.apply(Hand.kRight), 3)), 
+                -(Math.signum(xFunc.apply(Hand.kLeft)) * Math.abs(Math.pow(xFunc.apply(Hand.kLeft), 3))  / centerToCorner) * 0.7, 
+                Output.PERCENT
             );
         }
 
@@ -271,7 +311,7 @@ public class Drive extends SubsystemBase {
 
         private final Timer timer = new Timer();
         private final Trajectory trajectory;
-        
+
         // Constructor
         public TrajectoryFollowerCommand(Trajectory trajectory) {
             this.trajectory = trajectory;
@@ -281,6 +321,7 @@ public class Drive extends SubsystemBase {
         // Initialize method
         @Override
         public void initialize() {
+            Drive.this.reset(new Pose2d(trajectory.sample(0.0).poseMeters.getTranslation(), Rotation2d.fromDegrees(90.0)));
             timer.reset();
             timer.start();
         }
@@ -292,12 +333,12 @@ public class Drive extends SubsystemBase {
             ChassisSpeeds adjustedSpeeds = autoController.calculate(
                 Drive.this.getPose(), 
                 poseRef, 
-                new Rotation2d(0.0)
+                Rotation2d.fromDegrees(90.0)
             );
             Drive.this.setSpeeds(
                 adjustedSpeeds.vxMetersPerSecond, 
                 adjustedSpeeds.vyMetersPerSecond, 
-                adjustedSpeeds.omegaRadiansPerSecond, 
+                0, 
                 Output.VELOCITY
             );
         }

@@ -7,11 +7,7 @@ import edu.wpi.first.wpilibj.geometry.Translation2d;
 
 // Bread util class
 public class BreadUtil {
-
-    public static void main(String[] args) {
-        System.out.println(angleTo360(361));
-    }
-
+    
     // Private constructor because this is a utility class
     private BreadUtil () {} 
 
@@ -41,7 +37,7 @@ public class BreadUtil {
     public static double angleTo180Range(double angle) {
         double remainder = angle % 360;
         if (remainder > 180.0) remainder = -360 + remainder;
-        if (remainder < 180.0) remainder = 360 + remainder;
+        if (remainder < -180.0) remainder = 360 + remainder;
         return remainder;
     }
 

@@ -6,6 +6,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Launch Trajectories",
+      "request": "launch",
+      "mainClass": "frc.robot.trajectories.Trajectories",
+      "projectName": "2021-Robot"
+    },
+    {
+      "type": "java",
       "name": "Launch BreadLogger",
       "request": "launch",
       "mainClass": "frc.robot.commons.BreadLogger",

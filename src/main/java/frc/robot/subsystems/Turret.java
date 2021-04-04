@@ -16,7 +16,7 @@ public class Turret extends SubsystemBase {
     // Variables
     /* Center to turret is 7.5 inches */
     private final DoubleSupplier defaultRefSupplier;
-    public final double offset = 350.1;
+    public final double offset = 338;
     private final double initialPos;
     private final double startPos;
     private final CANSparkMax motor = new CANSparkMax(33, MotorType.kBrushless);
@@ -31,7 +31,7 @@ public class Turret extends SubsystemBase {
     public Turret(DoubleSupplier defaultRefSupplier) {
         encoder.setDistancePerRotation(360.0);
         initialPos = encoder.getDistance();
-        startPos = BreadUtil.angleTo180Range(initialPos - offset);
+        startPos = BreadUtil.angleTo180Range(initialPos - offset);  
         pid.setTolerance(2);
         visionPid.setTolerance(1);
         this.defaultRefSupplier = defaultRefSupplier;
@@ -69,14 +69,14 @@ public class Turret extends SubsystemBase {
     // In the periodic method of this subsystem set the turret based on the parameters
     @Override
     public void periodic() {
-        if (mode == TurretOutput.Position) {
-            double angle = getSafestPosition(reference, getDistance());
-            double output = MathUtil.clamp(vision ? visionPid.calculate(getDistance(), angle) : pid.calculate(getDistance(), angle), -3, 3);
-            motor.setVoltage(output);
-        } else {
-            motor.setVoltage(0.0);
-        }
-        SmartDashboard.putNumber("Turret Angle", encoder.getDistance());
+        // if (mode == TurretOutput.Position) {
+        //     double angle = getSafestPosition(reference, getDistance());
+        //     double output = MathUtil.clamp(vision ? visionPid.calculate(getDistance(), angle) : pid.calculate(getDistance(), angle), -3, 3);
+        //     motor.setVoltage(output);
+        // } else {
+        //     motor.setVoltage(0.0);
+        // }
+        SmartDashboard.putNumber("Turret Angle", getDistance());
     }
 
     // Private method to get the closest angle to the turret that is between the range of (-210, 210)

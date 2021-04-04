@@ -56,16 +56,16 @@ public class Flywheel extends SubsystemBase {
     // Periodic method of the flywheel
     @Override
     public void periodic() {
-        if (mode == FlywheelOutput.Velocity) {
-            double pidOutput = pid.calculate(getVelocity(), reference);
-            double ffOutput = ff.calculate(reference);
-            double output = MathUtil.clamp(pidOutput + ffOutput, -12, 12);
-            leftMotor.setVoltage(output);
-            rightMotor.setVoltage(-output);
-        } else {
-            rightMotor.setVoltage(0.0);
-            leftMotor.setVoltage(0.0);
-        }
+        // if (mode == FlywheelOutput.Velocity) {
+        //     double pidOutput = pid.calculate(getVelocity(), reference);
+        //     double ffOutput = ff.calculate(reference);
+        //     double output = MathUtil.clamp(pidOutput + ffOutput, -12, 12);
+        //     leftMotor.setVoltage(output);
+        //     rightMotor.setVoltage(-output);
+        // } else {
+        //     rightMotor.setVoltage(0.0);
+        //     leftMotor.setVoltage(0.0);
+        // }
         SmartDashboard.putNumber("Flywheel Velocity", getVelocity());
     }
 
