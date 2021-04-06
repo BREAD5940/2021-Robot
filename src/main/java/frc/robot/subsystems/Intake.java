@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
 
@@ -18,7 +17,7 @@ public class Intake extends SubsystemBase {
 
     // Method to set the intake motor by percent
     public void intake(double percent) {
-        // motor.set(MathUtil.clamp(percent, -1, 1));
+        motor.set(MathUtil.clamp(percent, -1, 1));
     }   
 
     // Method to disable the intake

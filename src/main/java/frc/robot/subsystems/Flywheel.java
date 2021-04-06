@@ -15,7 +15,7 @@ public class Flywheel extends SubsystemBase {
     private final WPI_TalonFX leftMotor = new WPI_TalonFX(22);
     private final WPI_TalonFX rightMotor = new WPI_TalonFX(23);
     private final Encoder encoder = new Encoder(3, 4);
-    private final PIDController pid = new PIDController(0.02, 0.0, 0.0);
+    private final PIDController pid = new PIDController(0.01, 0.0, 0.0);
     private final SimpleMotorFeedforward ff = new SimpleMotorFeedforward(0.72, 0.00235109717);
     private FlywheelOutput mode = FlywheelOutput.None;
     private double reference = 0.0;
@@ -23,7 +23,7 @@ public class Flywheel extends SubsystemBase {
     // Constructor
     public Flywheel() {
         encoder.setDistancePerPulse(1/2048.0);
-        pid.setTolerance(100);
+        pid.setTolerance(150);
     }
 
     // Method to get the velocity (in RPM) of the shooter
@@ -56,17 +56,18 @@ public class Flywheel extends SubsystemBase {
     // Periodic method of the flywheel
     @Override
     public void periodic() {
-        // if (mode == FlywheelOutput.Velocity) {
-        //     double pidOutput = pid.calculate(getVelocity(), reference);
-        //     double ffOutput = ff.calculate(reference);
-        //     double output = MathUtil.clamp(pidOutput + ffOutput, -12, 12);
-        //     leftMotor.setVoltage(output);
-        //     rightMotor.setVoltage(-output);
-        // } else {
-        //     rightMotor.setVoltage(0.0);
-        //     leftMotor.setVoltage(0.0);
-        // }
+        if (mode == FlywheelOutput.Velocity) {
+            double pidOutput = pid.calculate(getVelocity(), reference);
+            double ffOutput = ff.calculate(reference);
+            double output = MathUtil.clamp(pidOutput + ffOutput, -12, 12);
+            leftMotor.setVoltage(output);
+            rightMotor.setVoltage(-output);
+        } else {
+            rightMotor.setVoltage(0.0);
+            leftMotor.setVoltage(0.0);
+        }
         SmartDashboard.putNumber("Flywheel Velocity", getVelocity());
+        SmartDashboard.putNumber("Flywheel Reference", reference);
     }
 
     // Flywheel output enum

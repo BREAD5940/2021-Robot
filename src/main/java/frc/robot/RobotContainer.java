@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.subsystems.Accelerator;
 import frc.robot.subsystems.Drive;
@@ -15,6 +16,7 @@ import frc.robot.subsystems.Spindexer;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.Turret;
 import frc.robot.subsystems.Vision;
+import frc.robot.subsystems.SuperStructure.TrackingMode;
 
 // Robot container class
 public class RobotContainer {
@@ -43,7 +45,7 @@ public class RobotContainer {
   public RobotContainer() {
     configureButtonBindings();
     drive.setDefaultCommand(drive. new DefaultDriveCommand(controller::getX, controller::getY));
-    superStructure.setDefaultCommand(superStructure.new IdleCommand(controller::getTriggerAxis));
+    superStructure.setDefaultCommand(superStructure.new IdleCommand(controller::getTriggerAxis, true));
   }
 
   // Method to configure the button bindings
@@ -52,14 +54,32 @@ public class RobotContainer {
       new InstantCommand(() -> drive.reset(new Pose2d()), drive)
     );
 
-    new JoystickButton(controller, Button.kA.value).whenPressed(
-      superStructure.new ShootCommand(false)
-    ); 
+    // new JoystickButton(controller, Button.kY.value).whenPressed(
+    //   superStructure.new ShootCommand(TrackingMode.Green)
+    // ); 
     
-    new JoystickButton(controller, Button.kB.value).whenPressed(
-      superStructure.new ShootCommand(true)
-    );
+    // new JoystickButton(controller, Button.kB.value).whenPressed(
+    //   superStructure.new ShootCommand(TrackingMode.Yellow)
+    // );
 
+    // new JoystickButton(controller, Button.kA.value).whenPressed(
+    //   superStructure.new ShootCommand(TrackingMode.Blue)
+    // );
+
+    // new JoystickButton(controller, Button.kX.value).whenPressed(
+    //   superStructure.new ShootCommand(TrackingMode.Red)
+    // );
+    new JoystickButton(controller, Button.kBumperLeft.value).whenPressed(
+      superStructure.new ShootCommand(TrackingMode.None)
+    );
+    
+    new JoystickButton(controller, Button.kY.value).toggleWhenActive(
+      new StartEndCommand(
+        () -> superStructure.new IdleCommand(controller::getTriggerAxis, false).schedule(),
+        () -> superStructure.new IdleCommand(controller::getTriggerAxis, true).schedule(),
+        superStructure
+      )
+    );
   }
 
   // Method to get the autonomus command

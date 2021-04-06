@@ -2,27 +2,26 @@ package frc.robot.trajectories;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.Trajectory.State;
-import edu.wpi.first.wpilibj.trajectory.constraint.TrajectoryConstraint;
-import edu.wpi.first.wpilibj.util.Units;
 import frc.robot.commons.BreadPose2d;
 
 // Trajectories class
 public class Trajectories {
 
     public static void main(String[] args) {
-        for (State state : bounce.getStates()) {
+        for (State state: bounce.getStates()) {
             System.out.println(state);
         }
     }
 
-    // Salom Trajectory
+    // Salom Trajectory /* CONVERT TO METERS!!!! */
     public static final Trajectory salom = generateTrajectory(
         12/2.82, 
         4.0,
@@ -43,76 +42,46 @@ public class Trajectories {
             new BreadPose2d(-0.232, 19.915, Rotation2d.fromDegrees(-7.806), Rotation2d.fromDegrees(0)),
             new BreadPose2d(-3, 18.52, Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(45))
         ),
-        true, 
         true
     );
 
     // Bounce Trajectory
     public static final Trajectory bounce = generateTrajectory(
-        12.0/2.82, 
+        12/2.82, 
         4.0,
         List.of(
-            new BreadPose2d(0.5, 17.347, Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)),
-            new BreadPose2d(4.252, 18.208, Rotation2d.fromDegrees(88.751), Rotation2d.fromDegrees(0)),
-            new BreadPose2d(4.856, 24.146, Rotation2d.fromDegrees(89.817), Rotation2d.fromDegrees(0))
-        ),
-        true, 
+            new BreadPose2d(0.827, 5.778, Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)),
+            new BreadPose2d(1.644, 6.28, Rotation2d.fromDegrees(85), Rotation2d.fromDegrees(0)),
+         new BreadPose2d(1.719, 7.177, Rotation2d.fromDegrees(81.892), Rotation2d.fromDegrees(0)),
+    new BreadPose2d(1.828, 6.139, Rotation2d.fromDegrees(-84.709), Rotation2d.fromDegrees(0)),
+    new BreadPose2d(2.742, 5.659, Rotation2d.fromDegrees(-40.392), Rotation2d.fromDegrees(0)),
+    new BreadPose2d(3.199, 4.804, Rotation2d.fromDegrees(-87.724), Rotation2d.fromDegrees(0))
+),
+
         true
     );
 
     // Method to generate a trajectory 
-    private static Trajectory generateTrajectory(double maxVel, double maxAccel, List<BreadPose2d> waypoints, boolean clampedCubic, boolean feet, TrajectoryConstraint... constraints) {
-        List<Pose2d> transformedWaypoints = new ArrayList<>();
-        for (int i=0; i<waypoints.size(); i++) {
-            transformedWaypoints.add(feet ? new BreadPose2d(
-                Units.feetToMeters(waypoints.get(i).getX()), 
-                Units.feetToMeters(waypoints.get(i).getY()),
-                waypoints.get(i).getRotation(),
-                waypoints.get(i).swerveRot
-            ) : waypoints.get(i));
-        }
+    private static Trajectory generateTrajectory(double maxVel, double maxAccel, List<BreadPose2d> waypoints, boolean clampedCubic) {
         TrajectoryConfig config = new TrajectoryConfig(maxVel, maxAccel);
-        for (TrajectoryConstraint constraint : constraints) {
-            config.addConstraint(constraint);
-        }
+        Trajectory trajectory;
         if (!clampedCubic) {
-            int currWaypoint = 0;
-            List<State> states = TrajectoryGenerator.generateTrajectory(transformedWaypoints, config).getStates();
-            List<State> newStates = new ArrayList<>();
-            for (State state : states) {
-                if (Math.abs(state.poseMeters.getX() - transformedWaypoints.get(currWaypoint + 1).getX()) < 0.0001 && Math.abs(state.poseMeters.getY() - transformedWaypoints.get(currWaypoint + 1).getY()) < 0.0001) {
-                    currWaypoint += 1;
-                }
-                newStates.add(new State(
-                    state.timeSeconds,
-                    state.velocityMetersPerSecond,
-                    state.accelerationMetersPerSecondSq,
-                    new Pose2d(state.poseMeters.getX(), state.poseMeters.getY(), currWaypoint >= waypoints.size() ? waypoints.get(currWaypoint - 1).swerveRot : waypoints.get(currWaypoint).swerveRot),
-                    state.curvatureRadPerMeter
-                ));
+            trajectory = TrajectoryGenerator.generateTrajectory(waypoints.stream().map(point -> new Pose2d(point.getTranslation(), point.getRotation())).collect(Collectors.toList()), config);
+        } else {
+            trajectory = TrajectoryGenerator.generateTrajectory(
+                waypoints.get(0), 
+                IntStream.range(0, waypoints.size()).filter(i -> i > 0 && i < waypoints.size() - 1).mapToObj(i -> waypoints.get(i).getTranslation()).collect(Collectors.toList()), 
+                waypoints.get(waypoints.size()-1), config
+            );
+        }
+        int curr = 0;
+        for (State state: trajectory.getStates()) {
+            if (Math.abs(state.poseMeters.getX() - waypoints.get(curr + 1).getX()) < 0.001 && Math.abs(state.poseMeters.getY() - waypoints.get(curr + 1).getY()) < 0.001) {
+                curr += 1;
             }
-            return new Trajectory(newStates);
+            state.poseMeters = new Pose2d(state.poseMeters.getX(), state.poseMeters.getY(), waypoints.get(curr).swerveRot);
         }
-        List<Translation2d> interiorPoints = new ArrayList<Translation2d>();
-        for (int i=1; i<transformedWaypoints.size()-1; i++) {
-            interiorPoints.add(transformedWaypoints.get(i).getTranslation());
-        }
-        int currWaypoint = 0;
-        List<State> states = TrajectoryGenerator.generateTrajectory(transformedWaypoints.get(0), interiorPoints, transformedWaypoints.get(transformedWaypoints.size()-1), config).getStates();
-        List<State> newStates = new ArrayList<>();
-        for (State state : states) {
-            if (Math.abs(state.poseMeters.getX() - transformedWaypoints.get(currWaypoint).getX()) < 0.0001 && Math.abs(state.poseMeters.getY() - transformedWaypoints.get(currWaypoint).getY()) < 0.0001) {
-                currWaypoint += 1;
-            }
-            newStates.add(new State(
-                state.timeSeconds,
-                state.velocityMetersPerSecond,
-                state.accelerationMetersPerSecondSq,
-                new Pose2d(state.poseMeters.getX(), state.poseMeters.getY(), currWaypoint >= waypoints.size() ? waypoints.get(currWaypoint - 1).swerveRot : waypoints.get(currWaypoint).swerveRot),
-                state.curvatureRadPerMeter
-            ));
-        }
-        return new Trajectory(newStates);
+        return trajectory;
     }
     
 }

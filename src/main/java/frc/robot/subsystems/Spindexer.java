@@ -17,7 +17,7 @@ public class Spindexer extends SubsystemBase {
 
     // Variables
     private final double gearing = 1.0/((60.0/14)*(50.0/18)*(50.0/20));
-    private final double offset = -5.0;
+    private final double offset = -14.5;
     private final CANSparkMax motor = new CANSparkMax(34, MotorType.kBrushless);
     private final CANEncoder motorEncoder = motor.getEncoder();
     private final DutyCycleEncoder absEncoder = new DutyCycleEncoder(0);
@@ -30,8 +30,8 @@ public class Spindexer extends SubsystemBase {
 
     // Constructor
     public Spindexer() {
-        motor.setSmartCurrentLimit(10);
-        motor.setSecondaryCurrentLimit(12);
+        motor.setSmartCurrentLimit(8);
+        motor.setSecondaryCurrentLimit(10);
         absEncoder.setDistancePerRotation(360.0);
         positionPid.setTolerance(5, 1);
         velocityPid.setTolerance(1);
@@ -85,17 +85,17 @@ public class Spindexer extends SubsystemBase {
     // Periodic method
     @Override
     public void periodic() {
-        // if (mode == SpindexerOutput.Position) {
-        //     double output = MathUtil.clamp(positionPid.calculate(getDistance(), positionRef), -6, 6);
-        //     motor.setVoltage(output);
-        // } else if (mode == SpindexerOutput.Velocity) {
-        //     double ffOutput = ff.calculate(velocityRef);
-        //     double pidOutput = velocityPid.calculate(getVelocity(), velocityRef);
-        //     double output = MathUtil.clamp(ffOutput + pidOutput, -12, 12);
-        //     motor.setVoltage(output);
-        // } else {
-        //     motor.setVoltage(0.0);
-        // }
+        if (mode == SpindexerOutput.Position) {
+            double output = MathUtil.clamp(positionPid.calculate(getDistance(), positionRef), -6, 6);
+            motor.setVoltage(output);
+        } else if (mode == SpindexerOutput.Velocity) {
+            double ffOutput = ff.calculate(velocityRef);
+            double pidOutput = velocityPid.calculate(getVelocity(), velocityRef);
+            double output = MathUtil.clamp(ffOutput + pidOutput, -12, 12);
+            motor.setVoltage(output);
+        } else {
+            motor.setVoltage(0.0);
+        }
         SmartDashboard.putNumber("Spindexer angle", getDistance());
         SmartDashboard.putNumber("Spindexer speed", getVelocity());
     }
@@ -161,7 +161,7 @@ public class Spindexer extends SubsystemBase {
         @Override
         public void initialize() {
             startPos = getDistance();
-            setVelocityReference(100.0);
+            setVelocityReference(40.0);
             Spindexer.this.setRampRate(1.0);
         }
 

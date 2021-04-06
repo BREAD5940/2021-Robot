@@ -29,7 +29,7 @@ public class Hood extends SubsystemBase {
     public Hood() {
         setCurrentLimit(5, 10);
         absEncoder.setDistancePerRotation(24.0);
-        pid.setTolerance(2.0, 1.0);
+        pid.setTolerance(3.0, 2.0);
     }
 
     // Method to get the rpm of the integrated motor encoder 
@@ -80,14 +80,14 @@ public class Hood extends SubsystemBase {
     // Periodic method
     @Override
     public void periodic() {
-        // if (mode == HoodOutput.Position) {
-        //     double output = MathUtil.clamp(pid.calculate(getDistance(), positionRef), -12, 12);
-        //     motor.setVoltage(-output);
-        // } else if (mode == HoodOutput.Voltage) {
-        //     motor.setVoltage(-voltageRef);
-        // } else {
-        //     motor.setVoltage(0.0);
-        // }
+        if (mode == HoodOutput.Position) {
+            double output = MathUtil.clamp(pid.calculate(getDistance(), positionRef), -12, 12);
+            motor.setVoltage(-output);
+        } else if (mode == HoodOutput.Voltage) {
+            motor.setVoltage(-voltageRef);
+        } else {
+            motor.setVoltage(0.0);
+        }
         SmartDashboard.putNumber("Hood angle", getDistance());
         SmartDashboard.putNumber("Hood speed", getVelocity());
     }

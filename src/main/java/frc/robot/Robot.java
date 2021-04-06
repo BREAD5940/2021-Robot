@@ -4,10 +4,8 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Transform2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -27,6 +25,8 @@ public class Robot extends TimedRobot {
     m_robotContainer.drive.reset(new Pose2d(new Translation2d(), new Rotation2d()));
     SmartDashboard.putNumber("Flywheel-Setpoint", 4000.0);
     SmartDashboard.putNumber("Hood-Setpoint", 0.0);
+    SmartDashboard.putNumber("Turret-Offset", 0.0);
+    SmartDashboard.putNumber("Interpolation shooter setpoint", 0.0);
   }
 
   // Robot periodic
@@ -61,8 +61,8 @@ public class Robot extends TimedRobot {
     // Trajectory modifiedSalom = Trajectories.salom.transformBy(new Transform2d(new Translation2d(), Rotation2d.fromDegrees(90.0)));
     CommandScheduler.getInstance().schedule(
       new ParallelCommandGroup(
-        m_robotContainer.superStructure.new HomingRoutine(),
-        m_robotContainer.drive.new TrajectoryFollowerCommand(Trajectories.bounce)
+        // m_robotContainer.superStructure.new HomingRoutine(),
+        m_robotContainer.drive.new TrajectoryFollowerCommand(Trajectories.bounce, Rotation2d.fromDegrees(90.0))
       )
     );
   }

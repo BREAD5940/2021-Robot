@@ -39,15 +39,55 @@ public class SuperStructure extends SubsystemBase {
     }   
 
     // Method to track a target
-    public void trackTarget(boolean trenchMode) {
-        if (visionSupplier.hasTarget()) {
-            hood.setPositionReference(InterpolatingTable.get(visionSupplier.getDistance()).hoodAngle);
-            flywheel.setReference(InterpolatingTable.get(visionSupplier.getDistance()).rpm);
-            turret.setReference(turret.getDistance() + visionSupplier.getYaw(), true);
-        } else {
-            hood.setPositionReference(0.0);
-            flywheel.setReference(4000);
-            turret.setReference();
+    public void trackTarget(TrackingMode trackingMode) {
+        switch (trackingMode) {
+            case None:
+                if (visionSupplier.hasTarget()) {
+                    hood.setPositionReference(InterpolatingTable.get(visionSupplier.getDistance()).hoodAngle);
+                    flywheel.setReference(InterpolatingTable.get(visionSupplier.getDistance()).rpm);
+                    turret.setReference(turret.getDistance() + visionSupplier.getYaw() + InterpolatingTable.get(visionSupplier.getDistance()).offset, true);
+                } else {
+                    hood.setPositionReference(0.0);
+                    flywheel.setReference(4000);
+                    turret.setReference(turret.getDistance(), true);
+                }
+                break;
+            case Green:
+                if (visionSupplier.hasTarget()) {
+                    turret.setReference(turret.getDistance() + visionSupplier.getYaw() - 1, true);
+                } else {
+                    turret.setReference(turret.getDistance(), true);
+                }
+                hood.setPositionReference(14.5);
+                flywheel.setReference(2750);
+                break;
+            case Yellow:
+                if (visionSupplier.hasTarget()) {
+                    turret.setReference(turret.getDistance() + visionSupplier.getYaw() - 1.5, true);
+                } else {
+                    turret.setReference(turret.getDistance(), true);
+                }
+                hood.setPositionReference(25);
+                flywheel.setReference(3200);
+                break;
+            case Blue:
+                if (visionSupplier.hasTarget()) {
+                    turret.setReference(turret.getDistance() + visionSupplier.getYaw() - 1.5, true);
+                } else {
+                    turret.setReference(turret.getDistance(), true);
+                }
+                hood.setPositionReference(29);
+                flywheel.setReference(3375);
+                break;
+            case Red:
+                if (visionSupplier.hasTarget()) {
+                    turret.setReference(turret.getDistance() + visionSupplier.getYaw() - 0.5, true);
+                } else {
+                    turret.setReference(turret.getDistance(), true);
+                }
+                hood.setPositionReference(27.5);
+                flywheel.setReference(3400);
+                break;
         }
     }
 
@@ -70,11 +110,13 @@ public class SuperStructure extends SubsystemBase {
     public class IdleCommand extends CommandBase {
         
         private final Function<Hand, Double> trigger;
+        private final boolean toggledOn;
         
         // Constructor 
-        public IdleCommand(Function<Hand, Double> trigger) {
+        public IdleCommand(Function<Hand, Double> trigger, boolean toggledOn) {
             addRequirements(turret, hood, spindexer, accelerator, flywheel, intake, SuperStructure.this);
             this.trigger = trigger;
+            this.toggledOn = toggledOn;
         }
 
         // Initialize method
@@ -98,6 +140,10 @@ public class SuperStructure extends SubsystemBase {
                 spindexer.disable();
             }
             turret.setReference();
+            if (toggledOn) {
+                flywheel.setReference(visionSupplier.hasTarget() ? InterpolatingTable.get(visionSupplier.getDistance()).rpm : 3400);
+                accelerator.setReference(5000.0);
+            }
         }
 
         // End method
@@ -117,15 +163,15 @@ public class SuperStructure extends SubsystemBase {
         BreadLogger logger;
 
         // Constructor
-        public ShootCommand(boolean trenchMode) {
+        public ShootCommand(TrackingMode trackingMode) {
             addRequirements(turret, hood, spindexer, accelerator, flywheel, intake, SuperStructure.this);
             addCommands(
-                new ParallelDeadlineGroup(
-                    spindexer.new TurnSpindexerCommand(),
-                    new RunCommand(() -> trackTarget(trenchMode), hood, flywheel, turret)
-                        .beforeStarting(() -> accelerator.setReference(-100), accelerator)
-                ),
-                new RunCommand(() -> trackTarget(trenchMode), hood, flywheel, turret)
+                // new ParallelDeadlineGroup(
+                //     spindexer.new TurnSpindexerCommand(),
+                //     new RunCommand(() -> trackTarget(trackingMode), hood, flywheel, turret)
+                //         .beforeStarting(() -> accelerator.setReference(-100), accelerator)
+                // ),
+                new RunCommand(() -> trackTarget(trackingMode), hood, flywheel, turret)
                     .beforeStarting(() -> accelerator.setReference(5000), accelerator)
                     .withInterrupt(() -> accelerator.atReference() && flywheel.atReference() && hood.atPositionReference()),
                 new ParallelDeadlineGroup(
@@ -133,7 +179,7 @@ public class SuperStructure extends SubsystemBase {
                         spindexer.new Spin360Command(),
                         new WaitCommand(0.75)
                     ), 
-                    new RunCommand(() -> trackTarget(trenchMode), hood, flywheel, turret)
+                    new RunCommand(() -> trackTarget(trackingMode), hood, flywheel, turret)
                 ),
                 new InstantCommand(() -> {
                     flywheel.disable();
@@ -163,6 +209,15 @@ public class SuperStructure extends SubsystemBase {
             );
         }
 
+    }
+
+    // Tracking Mode Enum 
+    public enum TrackingMode {
+        Green,
+        Yellow,
+        Blue,
+        Red,
+        None
     }
     
 }

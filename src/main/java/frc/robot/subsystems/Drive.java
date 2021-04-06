@@ -7,7 +7,6 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.controller.HolonomicDriveController;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.ProfiledPIDController;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
@@ -31,6 +30,7 @@ import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
+import frc.robot.commons.BreadHolonomicDriveController;
 
 // Drive class
 public class Drive extends SubsystemBase {
@@ -39,10 +39,10 @@ public class Drive extends SubsystemBase {
     private boolean lockTranslationHeading = false;
     private double lockTranslationTarget = 0.0; 
     private final PIDController lockTranslationController = new PIDController(0.01, 0, 0);
-    private final HolonomicDriveController autoController = new HolonomicDriveController(
-        new PIDController(1.0, 0.0, 0.0), 
-        new PIDController(1.0, 0.0, 0.0), 
-        new ProfiledPIDController(1.0, 0.0, 0.0, new TrapezoidProfile.Constraints(
+    private final BreadHolonomicDriveController autoController = new BreadHolonomicDriveController(
+        new PIDController(4.0, 0.0, 0.0), 
+        new PIDController(4.0, 0.0, 0.0), 
+        new ProfiledPIDController(4.0, 0.0, 0.0, new TrapezoidProfile.Constraints(
             Units.degreesToRadians(180.0), 
             Units.degreesToRadians(120.0))
         )
@@ -66,13 +66,14 @@ public class Drive extends SubsystemBase {
     private Pose2d pose = odometry.getPoseMeters();
     private final Field2d field = new Field2d();
 
-    // Method to drive
-    public void setSpeeds(double xSpeed, double ySpeed, double rot, Output output) {
+    // Method to set the speeds of the robot
+    public void setSpeeds(double xSpeed, double ySpeed, double rot, Output output, boolean autonomousMode) {
         SwerveModuleState[] states = new SwerveModuleState[4];
         if (!(Math.abs(rot) < 0.01)) {
             lockTranslationHeading = false;
             states = kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, pose.getRotation()));
-        } else if (Math.abs(rot) < 0.01 && (Math.abs(xSpeed) >= 0.01 || Math.abs(ySpeed) >= 0.01)) {
+        }
+        if (Math.abs(rot) < 0.01 && (Math.abs(xSpeed) >= 0.01 || Math.abs(ySpeed) >= 0.01)) {
             if (!lockTranslationHeading) {
                 lockTranslationHeading = true;
                 lockTranslationTarget = getDistance();
@@ -86,7 +87,13 @@ public class Drive extends SubsystemBase {
                     pose.getRotation()
                 )
             );
-        } else {
+        }  
+        if (autonomousMode) {
+            states = kinematics.toSwerveModuleStates(
+                new ChassisSpeeds(xSpeed, ySpeed, rot)
+            );
+        }
+        if (Math.abs(xSpeed) < 0.01 && Math.abs(ySpeed) < 0.01 && Math.abs(rot) < 0.01) {
             lockTranslationHeading = false;
             double crossAngle = new Rotation2d(baseLength, baseWidth).getRadians();
             states[0] = new SwerveModuleState(0.0, new Rotation2d(crossAngle));
@@ -182,7 +189,8 @@ public class Drive extends SubsystemBase {
         SmartDashboard.putNumber("FL", angles[0]);   
         SmartDashboard.putNumber("FR", angles[1]);     
         SmartDashboard.putNumber("BL", angles[2]);    
-        SmartDashboard.putNumber("BR", angles[3]);    
+        SmartDashboard.putNumber("BR", angles[3]);  
+        SmartDashboard.putNumber("Robot Angle", getDistance());  
     }
 
     // Output Enum
@@ -294,14 +302,15 @@ public class Drive extends SubsystemBase {
                 -Math.signum(yFunc.apply(Hand.kRight)) * Math.abs(Math.pow(yFunc.apply(Hand.kRight), 3)), 
                 -Math.signum(xFunc.apply(Hand.kRight)) * Math.abs(Math.pow(xFunc.apply(Hand.kRight), 3)), 
                 -(Math.signum(xFunc.apply(Hand.kLeft)) * Math.abs(Math.pow(xFunc.apply(Hand.kLeft), 3))  / centerToCorner) * 0.7, 
-                Output.PERCENT
+                Output.PERCENT,
+                false
             );
         }
 
         // End method
         @Override
         public void end(boolean interrupted) {
-            Drive.this.setSpeeds(0.0, 0.0, 0.0, Output.PERCENT);
+            Drive.this.setSpeeds(0.0, 0.0, 0.0, Output.PERCENT, false);
         }
         
     }
@@ -311,17 +320,20 @@ public class Drive extends SubsystemBase {
 
         private final Timer timer = new Timer();
         private final Trajectory trajectory;
+        private final Rotation2d startHeading;
 
         // Constructor
-        public TrajectoryFollowerCommand(Trajectory trajectory) {
+        public TrajectoryFollowerCommand(Trajectory trajectory, Rotation2d startHeading) {
             this.trajectory = trajectory;
+            this.startHeading = startHeading;
             addRequirements(Drive.this);
         }   
         
         // Initialize method
         @Override
         public void initialize() {
-            Drive.this.reset(new Pose2d(trajectory.sample(0.0).poseMeters.getTranslation(), Rotation2d.fromDegrees(90.0)));
+            Drive.this.reset(new Pose2d(trajectory.sample(0.0).poseMeters.getTranslation(), startHeading));
+            autoController.setStartHeading(startHeading);
             timer.reset();
             timer.start();
         }
@@ -333,13 +345,14 @@ public class Drive extends SubsystemBase {
             ChassisSpeeds adjustedSpeeds = autoController.calculate(
                 Drive.this.getPose(), 
                 poseRef, 
-                Rotation2d.fromDegrees(90.0)
+                startHeading
             );
             Drive.this.setSpeeds(
                 adjustedSpeeds.vxMetersPerSecond, 
                 adjustedSpeeds.vyMetersPerSecond, 
-                0, 
-                Output.VELOCITY
+                adjustedSpeeds.omegaRadiansPerSecond, 
+                Output.VELOCITY,
+                true
             );
         }
 
@@ -352,7 +365,7 @@ public class Drive extends SubsystemBase {
         // End method
         @Override
         public void end(boolean interrupted) {
-            Drive.this.setSpeeds(0.0, 0.0, 0.0, Output.PERCENT);
+            Drive.this.setSpeeds(0.0, 0.0, 0.0, Output.PERCENT, false);
         }
 
     }

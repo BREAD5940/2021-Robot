@@ -14,10 +14,11 @@ public class InterpolatingTable {
     // Interpolating tree map
     private static final TreeMap<Double, ShotParameter> map = new TreeMap<>(
         Map.ofEntries(
-            entry(2.03, new ShotParameter(16.0, 3000.0, 0.0)),
-            entry(3.055, new ShotParameter(23.0, 3200.0, 0.0)),
-            entry(4.026, new ShotParameter(26.0, 3300.0, 0.0)),
-            entry(5.09, new ShotParameter(28.0, 3400.0, 0.0))
+            entry(2.03, new ShotParameter(16.0, 3025.0, -1)),
+            entry(3.055, new ShotParameter(23.0, 3225.0, -1)),
+            entry(4.026, new ShotParameter(26.0, 3325.0, -1)),
+            entry(5.09, new ShotParameter(28.0, 3425, -1)),
+            entry(6.617, new ShotParameter(28.0, 3425, -1))
         )
     );
 
