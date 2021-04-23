@@ -58,7 +58,7 @@ public class SuperStructure extends SubsystemBase {
                 } else {
                     turret.setReference(turret.getDistance(), true);
                 }
-                hood.setPositionReference(14.5);
+                hood.setPositionReference(11.5);
                 flywheel.setReference(2750);
                 break;
             case Yellow:
@@ -81,11 +81,11 @@ public class SuperStructure extends SubsystemBase {
                 break;
             case Red:
                 if (visionSupplier.hasTarget()) {
-                    turret.setReference(turret.getDistance() + visionSupplier.getYaw() - 0.5, true);
+                    turret.setReference(turret.getDistance() + visionSupplier.getYaw(), true);
                 } else {
                     turret.setReference(turret.getDistance(), true);
                 }
-                hood.setPositionReference(27.5);
+                hood.setPositionReference(28.5);
                 flywheel.setReference(3400);
                 break;
         }
@@ -191,6 +191,7 @@ public class SuperStructure extends SubsystemBase {
         // Initialize method
         @Override
         public void initialize() {
+            spindexer.disable();
             super.initialize();
             logger = new BreadLogger("shoot-command-data");
             logger.clear();

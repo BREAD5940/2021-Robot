@@ -8,8 +8,6 @@ import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import frc.robot.trajectories.Trajectories;
 
 // Robot class
 public class Robot extends TimedRobot {
@@ -59,12 +57,21 @@ public class Robot extends TimedRobot {
     }
     m_robotContainer.drive.setIdleModes(IdleMode.kBrake);
     // Trajectory modifiedSalom = Trajectories.salom.transformBy(new Transform2d(new Translation2d(), Rotation2d.fromDegrees(90.0)));
-    CommandScheduler.getInstance().schedule(
-      new ParallelCommandGroup(
-        // m_robotContainer.superStructure.new HomingRoutine(),
-        m_robotContainer.drive.new TrajectoryFollowerCommand(Trajectories.bounce, Rotation2d.fromDegrees(90.0))
-      )
-    );
+    // CommandScheduler.getInstance().schedule(
+    //   m_robotContainer.drive.new TrajectoryFollowerCommand(Trajectories.barrel, Rotation2d.fromDegrees(90.0))
+    // );
+    // CommandScheduler.getInstance().schedule(
+    //   m_robotContainer.superStructure.new IdleCommand()
+    // );
+    // if (m_robotContainer.vision.visionSupplier.getYaw() < -20.0) {
+    //   CommandScheduler.getInstance().schedule(
+    //     m_robotContainer.drive. new TrajectoryFollowerCommand(Trajectories.aRed, new Rotation2d())
+    //   );
+    // } else {
+    //   CommandScheduler.getInstance().schedule(
+    //     m_robotContainer.drive. new TrajectoryFollowerCommand(Trajectories.bRed, new Rotation2d())
+    //   );
+    // }
   }
 
   // Autonomus periodic

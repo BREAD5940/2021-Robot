@@ -40,9 +40,9 @@ public class Drive extends SubsystemBase {
     private double lockTranslationTarget = 0.0; 
     private final PIDController lockTranslationController = new PIDController(0.01, 0, 0);
     private final BreadHolonomicDriveController autoController = new BreadHolonomicDriveController(
-        new PIDController(4.0, 0.0, 0.0), 
-        new PIDController(4.0, 0.0, 0.0), 
-        new ProfiledPIDController(4.0, 0.0, 0.0, new TrapezoidProfile.Constraints(
+        new PIDController(1.0, 0.0, 0.0), 
+        new PIDController(1.0, 0.0, 0.0), 
+        new ProfiledPIDController(5.0, 0.0, 0.0, new TrapezoidProfile.Constraints(
             Units.degreesToRadians(180.0), 
             Units.degreesToRadians(120.0))
         )
@@ -68,7 +68,7 @@ public class Drive extends SubsystemBase {
 
     // Method to set the speeds of the robot
     public void setSpeeds(double xSpeed, double ySpeed, double rot, Output output, boolean autonomousMode) {
-        SwerveModuleState[] states = new SwerveModuleState[4];
+        SwerveModuleState[] states = kinematics.toSwerveModuleStates(new ChassisSpeeds(0, 0, 0));
         if (!(Math.abs(rot) < 0.01)) {
             lockTranslationHeading = false;
             states = kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, pose.getRotation()));
@@ -345,7 +345,7 @@ public class Drive extends SubsystemBase {
             ChassisSpeeds adjustedSpeeds = autoController.calculate(
                 Drive.this.getPose(), 
                 poseRef, 
-                startHeading
+                timer.get()  >= 1.5 ? Rotation2d.fromDegrees(45.0) : startHeading
             );
             Drive.this.setSpeeds(
                 adjustedSpeeds.vxMetersPerSecond, 
@@ -370,4 +370,55 @@ public class Drive extends SubsystemBase {
 
     }
 
+    // Turn Command
+    public class TurnCommand extends CommandBase {
+
+        Timer timer = new Timer();
+        double time;
+        double dutyCycle;
+        Direction direction;
+
+        public TurnCommand(double time, double dutyCycle, Direction direction) {
+            this.time = time;
+            this.dutyCycle = MathUtil.clamp(dutyCycle, 0, 1);
+            this.direction = direction;
+        }
+
+        @Override
+        public void initialize() {
+            timer.reset();
+            timer.start();
+        }
+
+        @Override
+        public void execute() {
+            Drive.this.setSpeeds(
+                0, 
+                0, 
+                direction == Direction.Counterclockwise ? dutyCycle  / centerToCorner : -dutyCycle  / centerToCorner, 
+                Output.PERCENT,
+                false
+            );
+        }
+
+        @Override
+        public boolean isFinished() {
+            return timer.get() >= time;
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            Drive.this.setSpeeds(0, 0, 0, Output.PERCENT, false);
+        }
+
+    }
+
+    // Direction Enum 
+    public enum Direction {
+        Clockwise,
+        Counterclockwise
+    }
+
 }
+
+

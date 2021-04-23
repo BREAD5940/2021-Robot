@@ -161,7 +161,7 @@ public class Spindexer extends SubsystemBase {
         @Override
         public void initialize() {
             startPos = getDistance();
-            setVelocityReference(40.0);
+            setVelocityReference(20.0);
             Spindexer.this.setRampRate(1.0);
         }
 
