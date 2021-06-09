@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import java.util.function.Function;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -11,11 +10,14 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import frc.robot.commons.BreadLogger;
 import frc.robot.interpolation.InterpolatingTable;
 import frc.robot.subsystems.Vision.VisionSupplier;
 
-// Super structure class
+/**
+ * Super structure subsystem
+ * All multi-subsystem interactions (methods, commands, ect.) should be put here
+ */
+
 public class SuperStructure extends SubsystemBase {
 
     // Variables
@@ -39,62 +41,30 @@ public class SuperStructure extends SubsystemBase {
     }   
 
     // Method to track a target
-    public void trackTarget(TrackingMode trackingMode) {
-        switch (trackingMode) {
-            case None:
-                if (visionSupplier.hasTarget()) {
-                    hood.setPositionReference(InterpolatingTable.get(visionSupplier.getDistance()).hoodAngle);
-                    flywheel.setReference(InterpolatingTable.get(visionSupplier.getDistance()).rpm);
-                    turret.setReference(turret.getDistance() + visionSupplier.getYaw() + InterpolatingTable.get(visionSupplier.getDistance()).offset, true);
-                } else {
-                    hood.setPositionReference(0.0);
-                    flywheel.setReference(4000);
-                    turret.setReference(turret.getDistance(), true);
-                }
-                break;
-            case Green:
-                if (visionSupplier.hasTarget()) {
-                    turret.setReference(turret.getDistance() + visionSupplier.getYaw() - 1, true);
-                } else {
-                    turret.setReference(turret.getDistance(), true);
-                }
-                hood.setPositionReference(11.5);
-                flywheel.setReference(2750);
-                break;
-            case Yellow:
-                if (visionSupplier.hasTarget()) {
-                    turret.setReference(turret.getDistance() + visionSupplier.getYaw() - 1.5, true);
-                } else {
-                    turret.setReference(turret.getDistance(), true);
-                }
-                hood.setPositionReference(25);
-                flywheel.setReference(3200);
-                break;
-            case Blue:
-                if (visionSupplier.hasTarget()) {
-                    turret.setReference(turret.getDistance() + visionSupplier.getYaw() - 1.5, true);
-                } else {
-                    turret.setReference(turret.getDistance(), true);
-                }
-                hood.setPositionReference(29);
-                flywheel.setReference(3375);
-                break;
-            case Red:
-                if (visionSupplier.hasTarget()) {
-                    turret.setReference(turret.getDistance() + visionSupplier.getYaw(), true);
-                } else {
-                    turret.setReference(turret.getDistance(), true);
-                }
-                hood.setPositionReference(28.5);
-                flywheel.setReference(3400);
-                break;
+    public void track() { 
+        if (visionSupplier.hasTarget()) {
+            hood.setPositionReference(InterpolatingTable.get(visionSupplier.getDistance()).hoodAngle);
+            flywheel.setReference(InterpolatingTable.get(visionSupplier.getDistance()).rpm);
+            turret.setPosition(turret.getDistance() + visionSupplier.getYaw() + InterpolatingTable.get(visionSupplier.getDistance()).offset);
+        } else {
+            hood.setPositionReference(0.0);
+            flywheel.setReference(0.0);
+            turret.lock();
         }
+    }
+
+    // Method to set all subsystems to a neutral state
+    public void disable() {
+        this.turret.lock();
+        this.spindexer.disable();
+        this.accelerator.disable();
+        this.flywheel.disable();
+        this.hood.setPositionReference(0.0);
+        this.intake.disable();
     }
 
     // Homing routine command
     public class HomingRoutine extends SequentialCommandGroup {
-        
-        // Constructor
         public HomingRoutine() {
             addRequirements(turret, hood, spindexer, accelerator, flywheel, intake, SuperStructure.this);
             addCommands(
@@ -103,75 +73,54 @@ public class SuperStructure extends SubsystemBase {
                 new WaitUntilCommand(hood::atPositionReference)
             );
         }
-
     }
 
     // Idle command
     public class IdleCommand extends CommandBase {
-        
         private final Function<Hand, Double> trigger;
-        private final boolean toggledOn;
-        
-        // Constructor 
-        public IdleCommand(Function<Hand, Double> trigger, boolean toggledOn) {
+        public IdleCommand(Function<Hand, Double> trigger) {
             addRequirements(turret, hood, spindexer, accelerator, flywheel, intake, SuperStructure.this);
             this.trigger = trigger;
-            this.toggledOn = toggledOn;
         }
 
-        // Initialize method
         @Override
         public void initialize() {
-            flywheel.disable();
-            accelerator.disable();
-            spindexer.disable();
-            intake.disable();
-            hood.setPositionReference(0.0);
+            disable();
         }
 
-        // Execute method
         @Override
         public void execute() {
-            if (Math.abs(trigger.apply(Hand.kRight)) > 0.1) {
+            if (trigger.apply(Hand.kRight) > 0.1) {
                 intake.intake(trigger.apply(Hand.kRight) * 0.9);
                 spindexer.setVelocityReference(20.0);
+            } else if (trigger.apply(Hand.kLeft) > 0.1) {
+                intake.outtake(trigger.apply(Hand.kLeft) * 0.9);
+                spindexer.setVelocityReference(20.0);
             } else {
-                intake.disable();
                 spindexer.disable();
-            }
-            turret.setReference();
-            if (toggledOn) {
-                flywheel.setReference(visionSupplier.hasTarget() ? InterpolatingTable.get(visionSupplier.getDistance()).rpm : 3400);
-                accelerator.setReference(5000.0);
+                intake.disable();
             }
         }
 
-        // End method
         @Override
         public void end(boolean interrupted) {
-            intake.disable();
-            spindexer.disable();
-            turret.disable();
+            disable();
         }
-
-
     }
 
     // Shoot command
     public class ShootCommand extends SequentialCommandGroup {
 
-        BreadLogger logger;
-
         // Constructor
-        public ShootCommand(TrackingMode trackingMode) {
+        public ShootCommand() {
             addRequirements(turret, hood, spindexer, accelerator, flywheel, intake, SuperStructure.this);
             addCommands(
-                // new ParallelDeadlineGroup(
-                //     spindexer.new TurnSpindexerCommand(),
-                //     new RunCommand(() -> trackTarget(trackingMode), hood, flywheel, turret)
-                //         .beforeStarting(() -> accelerator.setReference(-100), accelerator)
-                // ),
-                new RunCommand(() -> trackTarget(trackingMode), hood, flywheel, turret)
+                new ParallelDeadlineGroup(
+                    spindexer.new TurnSpindexerCommand(),
+                    new RunCommand(SuperStructure.this::track)
+                        .beforeStarting(() -> accelerator.setReference(-100), accelerator)
+                ).beforeStarting(turret::enable),
+                new RunCommand(SuperStructure.this::track)
                     .beforeStarting(() -> accelerator.setReference(5000), accelerator)
                     .withInterrupt(() -> accelerator.atReference() && flywheel.atReference() && hood.atPositionReference()),
                 new ParallelDeadlineGroup(
@@ -179,46 +128,11 @@ public class SuperStructure extends SubsystemBase {
                         spindexer.new Spin360Command(),
                         new WaitCommand(0.75)
                     ), 
-                    new RunCommand(() -> trackTarget(trackingMode), hood, flywheel, turret)
+                    new RunCommand(SuperStructure.this::track, hood, flywheel, turret)
                 ),
-                new InstantCommand(() -> {
-                    flywheel.disable();
-                    accelerator.disable();
-                }, flywheel, accelerator)
+                new InstantCommand(SuperStructure.this::disable)
             );
         }
-
-        // Initialize method
-        @Override
-        public void initialize() {
-            spindexer.disable();
-            super.initialize();
-            logger = new BreadLogger("shoot-command-data");
-            logger.clear();
-        }
-
-        // Execute method
-        @Override
-        public void execute() {
-            super.execute();
-            logger.write(
-                Timer.getFPGATimestamp(), 
-                flywheel.getVelocity(), 
-                flywheel.getReference(), 
-                accelerator.getVelocity(), 
-                accelerator.getReference()
-            );
-        }
-
-    }
-
-    // Tracking Mode Enum 
-    public enum TrackingMode {
-        Green,
-        Yellow,
-        Blue,
-        Red,
-        None
     }
     
 }

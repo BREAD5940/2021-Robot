@@ -32,7 +32,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
 import frc.robot.commons.BreadHolonomicDriveController;
 
-// Drive class
+/**
+ * Drive subsystem
+ * This subsystem contains all the methods and commands pertaining solely to the drivetrain
+ * Trajectory following code should be put here
+ */
+
 public class Drive extends SubsystemBase {
 
     // Variables
@@ -345,7 +350,7 @@ public class Drive extends SubsystemBase {
             ChassisSpeeds adjustedSpeeds = autoController.calculate(
                 Drive.this.getPose(), 
                 poseRef, 
-                timer.get()  >= 1.5 ? Rotation2d.fromDegrees(45.0) : startHeading
+                startHeading
             );
             Drive.this.setSpeeds(
                 adjustedSpeeds.vxMetersPerSecond, 
@@ -368,55 +373,6 @@ public class Drive extends SubsystemBase {
             Drive.this.setSpeeds(0.0, 0.0, 0.0, Output.PERCENT, false);
         }
 
-    }
-
-    // Turn Command
-    public class TurnCommand extends CommandBase {
-
-        Timer timer = new Timer();
-        double time;
-        double dutyCycle;
-        Direction direction;
-
-        public TurnCommand(double time, double dutyCycle, Direction direction) {
-            this.time = time;
-            this.dutyCycle = MathUtil.clamp(dutyCycle, 0, 1);
-            this.direction = direction;
-        }
-
-        @Override
-        public void initialize() {
-            timer.reset();
-            timer.start();
-        }
-
-        @Override
-        public void execute() {
-            Drive.this.setSpeeds(
-                0, 
-                0, 
-                direction == Direction.Counterclockwise ? dutyCycle  / centerToCorner : -dutyCycle  / centerToCorner, 
-                Output.PERCENT,
-                false
-            );
-        }
-
-        @Override
-        public boolean isFinished() {
-            return timer.get() >= time;
-        }
-
-        @Override
-        public void end(boolean interrupted) {
-            Drive.this.setSpeeds(0, 0, 0, Output.PERCENT, false);
-        }
-
-    }
-
-    // Direction Enum 
-    public enum Direction {
-        Clockwise,
-        Counterclockwise
     }
 
 }

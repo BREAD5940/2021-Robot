@@ -15,16 +15,18 @@ import frc.robot.subsystems.Spindexer;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.Turret;
 import frc.robot.subsystems.Vision;
-import frc.robot.subsystems.SuperStructure.TrackingMode;
 
-// Robot container class
+/**
+ * Robot container class
+ * This is where controller inputs are bound to robot functions
+ */
 public class RobotContainer {
   
   // Variables
   public final XboxController controller = new XboxController(0);
   public final Vision vision = new Vision();
   public final Drive drive = new Drive();
-  public final Turret turret = new Turret(() -> -drive.getDistance() + 90);
+  public final Turret turret = new Turret();
   public final Spindexer spindexer = new Spindexer();
   public final Accelerator accelerator = new Accelerator();
   public final Hood hood = new Hood();
@@ -44,7 +46,7 @@ public class RobotContainer {
   public RobotContainer() {
     configureButtonBindings();
     drive.setDefaultCommand(drive. new DefaultDriveCommand(controller::getX, controller::getY));
-    superStructure.setDefaultCommand(superStructure.new IdleCommand(controller::getTriggerAxis, false));
+    superStructure.setDefaultCommand(superStructure.new IdleCommand(controller::getTriggerAxis));
   }
 
   // Method to configure the button bindings
@@ -53,32 +55,9 @@ public class RobotContainer {
       new InstantCommand(() -> drive.reset(new Pose2d()), drive)
     );
 
-    new JoystickButton(controller, Button.kY.value).whenPressed(
-      superStructure.new ShootCommand(TrackingMode.Green)
-    ); 
-    
-    new JoystickButton(controller, Button.kB.value).whenPressed(
-      superStructure.new ShootCommand(TrackingMode.Yellow)
-    );
-
     new JoystickButton(controller, Button.kA.value).whenPressed(
-      superStructure.new ShootCommand(TrackingMode.Blue)
-    );
-
-    new JoystickButton(controller, Button.kX.value).whenPressed(
-      superStructure.new ShootCommand(TrackingMode.Red)
-    );
-    // new JoystickButton(controller, Button.kBumperLeft.value).whenPressed(
-    //   superStructure.new ShootCommand(TrackingMode.None)
-    // );
-    
-    // new JoystickButton(controller, Button.kY.value).toggleWhenActive(
-    //   new StartEndCommand(
-    //     () -> superStructure.new IdleCommand(controller::getTriggerAxis, false).schedule(),
-    //     () -> superStructure.new IdleCommand(controller::getTriggerAxis, true).schedule(),
-    //     superStructure
-    //   )
-    // );
+      superStructure.new ShootCommand()
+    ); 
   }
 
   // Method to get the autonomus command

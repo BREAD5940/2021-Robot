@@ -8,7 +8,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-// Vision subsystem
+/**
+ * Vision subsystem
+ * This subsystem contains and updates vision information gathered from Photon vision
+ */
+
 public class Vision extends SubsystemBase {
 
     // Variables

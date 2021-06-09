@@ -12,7 +12,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
 import frc.robot.commons.BreadUtil;
 
-// Spindexer class
+/**
+ * Spindexer subsystem
+ * This subsystem contains all the methods and commands pertaining solely to the spindexer
+ */
+
 public class Spindexer extends SubsystemBase {
 
     // Variables
@@ -24,7 +28,7 @@ public class Spindexer extends SubsystemBase {
     private final PIDController positionPid = new PIDController(0.1, 0.0, 0.001);
     private final PIDController velocityPid = new PIDController(0.0001, 0.0, 0.0);
     private final SimpleMotorFeedforward ff = new SimpleMotorFeedforward(0.0, 12.0/(5676.0 * gearing));
-    private SpindexerOutput mode = SpindexerOutput.None;
+    private SpindexerOutput mode = SpindexerOutput.kNone;
     private double positionRef = 0.0;
     private double velocityRef = 0.0;
 
@@ -49,20 +53,20 @@ public class Spindexer extends SubsystemBase {
 
     // Method to set the velocity reference of spindexer
     public void setVelocityReference(double rpm) {
-        mode = SpindexerOutput.Velocity;
+        mode = SpindexerOutput.kVelocity;
         velocityRef = rpm;
     }
 
     // Method to set the position reference of the spindexer
     public void setPositionReference(double position) {
-        mode = SpindexerOutput.Position;
+        mode = SpindexerOutput.kPosition;
         positionPid.setSetpoint(position);
         positionRef = position;
     }
 
     // Method to disable the spindexer
     public void disable() {
-        mode = SpindexerOutput.None;
+        mode = SpindexerOutput.kNone;
         velocityRef = 0.0;
         positionRef = 0.0;
     }
@@ -74,21 +78,21 @@ public class Spindexer extends SubsystemBase {
 
     // Method to check whether the spindexer is at its velocity reference
     public boolean atVelocityReference() {
-        return BreadUtil.atReference(getVelocity(), velocityRef, 5.0, true) && mode == SpindexerOutput.Velocity;
+        return BreadUtil.atReference(getVelocity(), velocityRef, 5.0, true) && mode == SpindexerOutput.kVelocity;
     }
 
     // Method to check whether the spindexer is at its position reference
     public boolean atPositionReference() {
-        return positionPid.atSetpoint() && mode == SpindexerOutput.Position;
+        return positionPid.atSetpoint() && mode == SpindexerOutput.kPosition;
     }
 
     // Periodic method
     @Override
     public void periodic() {
-        if (mode == SpindexerOutput.Position) {
+        if (mode == SpindexerOutput.kPosition) {
             double output = MathUtil.clamp(positionPid.calculate(getDistance(), positionRef), -6, 6);
             motor.setVoltage(output);
-        } else if (mode == SpindexerOutput.Velocity) {
+        } else if (mode == SpindexerOutput.kVelocity) {
             double ffOutput = ff.calculate(velocityRef);
             double pidOutput = velocityPid.calculate(getVelocity(), velocityRef);
             double output = MathUtil.clamp(ffOutput + pidOutput, -12, 12);
@@ -102,9 +106,9 @@ public class Spindexer extends SubsystemBase {
 
     // Spindexer ouput enum
     public enum SpindexerOutput {
-        Position,
-        Velocity,
-        None
+        kPosition,
+        kVelocity,
+        kNone
     }
 
     // Turn spindexer command

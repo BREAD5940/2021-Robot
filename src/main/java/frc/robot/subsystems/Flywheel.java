@@ -8,7 +8,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
 
-// Flywheel class
+/**
+ * Shooter subsystem
+ * This subsystem contains all the methods and commands pertaining solely to the shooter
+ */
+
 public class Flywheel extends SubsystemBase {
 
     // Variables
@@ -17,7 +21,7 @@ public class Flywheel extends SubsystemBase {
     private final Encoder encoder = new Encoder(3, 4);
     private final PIDController pid = new PIDController(0.01, 0.0, 0.0);
     private final SimpleMotorFeedforward ff = new SimpleMotorFeedforward(0.72, 0.00235109717);
-    private FlywheelOutput mode = FlywheelOutput.None;
+    private FlywheelOutput mode = FlywheelOutput.kNone;
     private double reference = 0.0;
 
     // Constructor
@@ -33,13 +37,13 @@ public class Flywheel extends SubsystemBase {
 
     // Method to disable the flywheel
     public void disable() {
-        mode = FlywheelOutput.None;
+        mode = FlywheelOutput.kNone;
         reference = 0.0;
     }
 
     // Method to set the reference of the flywheel
     public void setReference(double reference) {
-        mode = FlywheelOutput.Velocity;
+        mode = FlywheelOutput.kVelocity;
         this.reference = reference;
     }
 
@@ -56,7 +60,7 @@ public class Flywheel extends SubsystemBase {
     // Periodic method of the flywheel
     @Override
     public void periodic() {
-        if (mode == FlywheelOutput.Velocity) {
+        if (mode == FlywheelOutput.kVelocity) {
             double pidOutput = pid.calculate(getVelocity(), reference);
             double ffOutput = ff.calculate(reference);
             double output = MathUtil.clamp(pidOutput + ffOutput, -12, 12);
@@ -72,8 +76,8 @@ public class Flywheel extends SubsystemBase {
 
     // Flywheel output enum
     public enum FlywheelOutput {
-        Velocity,
-        None
+        kVelocity,
+        kNone
     }
 
 

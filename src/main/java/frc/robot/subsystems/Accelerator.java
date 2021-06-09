@@ -8,14 +8,18 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
 
-// Accelerator class
+/**
+ * Accelerator subsystem
+ * This subsystem contains all the methods and commands pertaining solely to the accelerator
+ */
+
 public class Accelerator extends SubsystemBase {
 
     // Variables
     private final WPI_TalonFX motor = new WPI_TalonFX(24);
     private final PIDController pid = new PIDController(0.0001, 0.0, 0.0);
     private final SimpleMotorFeedforward ff = new SimpleMotorFeedforward(0.6279999999999862, 0.00188087774);
-    private AcceleratorOutput mode = AcceleratorOutput.None;
+    private AcceleratorOutput mode = AcceleratorOutput.kNone;
     private double reference = 0.0;
 
     // Constructor
@@ -31,13 +35,13 @@ public class Accelerator extends SubsystemBase {
 
     // Method to disable the accelerator
     public void disable() {
-        mode = AcceleratorOutput.None;
+        mode = AcceleratorOutput.kNone;
         reference = 0.0;
     }
     
     // Method to set the reference of the accelerator
     public void setReference(double reference) {
-        mode = AcceleratorOutput.Velocity;
+        mode = AcceleratorOutput.kVelocity;
         this.reference = reference;
     }
 
@@ -54,7 +58,7 @@ public class Accelerator extends SubsystemBase {
     // Periodic method
     @Override
     public void periodic() {
-        if (mode == AcceleratorOutput.Velocity) {
+        if (mode == AcceleratorOutput.kVelocity) {
             double pidOutput = 0.0;
             if (Math.abs(this.reference) > 100) { 
                 pidOutput = pid.calculate(getVelocity(), reference);
@@ -70,8 +74,8 @@ public class Accelerator extends SubsystemBase {
 
     // Accelerator Output enum
     public enum AcceleratorOutput {
-        Velocity,
-        None
+        kVelocity,
+        kNone
     }
     
 }

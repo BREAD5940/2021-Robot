@@ -21,7 +21,7 @@ public class Hood extends SubsystemBase {
     private final DutyCycleEncoder absEncoder = new DutyCycleEncoder(2);
     private final CANEncoder motorEncoder = motor.getEncoder();
     private final PIDController pid = new PIDController(0.6, 0.0, 0.001);
-    private HoodOutput mode = HoodOutput.None;
+    private HoodOutput mode = HoodOutput.kNone;
     private double positionRef = 0.0;
     private double voltageRef = 0.0;
 
@@ -44,26 +44,26 @@ public class Hood extends SubsystemBase {
 
     // Method to set the voltage reference of the hood
     public void setVoltageReference(double volts) {
-        mode = HoodOutput.Voltage;
+        mode = HoodOutput.kVoltage;
         voltageRef = MathUtil.clamp(volts, -12, 12);
     }
 
     // Method to set the position reference of the hood
     public void setPositionReference(double position) {
-        mode = HoodOutput.Position;
+        mode = HoodOutput.kPosition;
         positionRef = MathUtil.clamp(position, -20.0, 42);
     }
 
     // Method to disable the hood
     public void disable() {
-        mode = HoodOutput.None;
+        mode = HoodOutput.kNone;
         voltageRef = 0.0;
         positionRef = 0.0;
     }
 
     // Method to check if the hood is at its position reference
     public boolean atPositionReference() {
-        return pid.atSetpoint() && mode == HoodOutput.Position;
+        return pid.atSetpoint() && mode == HoodOutput.kPosition;
     }
 
     // Method to set the current limit of the hood
@@ -80,10 +80,10 @@ public class Hood extends SubsystemBase {
     // Periodic method
     @Override
     public void periodic() {
-        if (mode == HoodOutput.Position) {
+        if (mode == HoodOutput.kPosition) {
             double output = MathUtil.clamp(pid.calculate(getDistance(), positionRef), -12, 12);
             motor.setVoltage(-output);
-        } else if (mode == HoodOutput.Voltage) {
+        } else if (mode == HoodOutput.kVoltage) {
             motor.setVoltage(-voltageRef);
         } else {
             motor.setVoltage(0.0);
@@ -94,9 +94,9 @@ public class Hood extends SubsystemBase {
 
     // Hood output enum
     public enum HoodOutput {
-        Position,
-        Voltage,
-        None
+        kPosition,
+        kVoltage,
+        kNone
     }
 
     // Home hood command
