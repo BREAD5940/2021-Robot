@@ -42,15 +42,17 @@ public class SuperStructure extends SubsystemBase {
 
     // Method to track a target
     public void track() { 
-        if (visionSupplier.hasTarget()) {
-            hood.setPositionReference(InterpolatingTable.get(visionSupplier.getDistance()).hoodAngle);
-            flywheel.setReference(InterpolatingTable.get(visionSupplier.getDistance()).rpm);
-            turret.setPosition(turret.getDistance() + visionSupplier.getYaw() + InterpolatingTable.get(visionSupplier.getDistance()).offset);
-        } else {
-            hood.setPositionReference(0.0);
-            flywheel.setReference(0.0);
-            turret.lock();
-        }
+        // if (visionSupplier.hasTarget()) {
+        //     hood.setPositionReference(InterpolatingTable.get(visionSupplier.getDistance()).hoodAngle);
+        //     flywheel.setReference(InterpolatingTable.get(visionSupplier.getDistance()).rpm);
+        //     turret.setPosition(turret.getDistance() + visionSupplier.getYaw() + InterpolatingTable.get(visionSupplier.getDistance()).offset);
+        // } else {
+        //     hood.setPositionReference(0.0);
+        //     flywheel.setReference(0.0);
+        //     turret.lock();
+        // }
+        hood.setPositionReference(0);
+        flywheel.setReference(4000.0);
     }
 
     // Method to set all subsystems to a neutral state
