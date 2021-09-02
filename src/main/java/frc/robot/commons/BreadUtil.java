@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj.geometry.Translation2d;
 
 // Bread util class
 public class BreadUtil {
-
+    
     // Private constructor because this is a utility class
     private BreadUtil () {} 
 
@@ -24,6 +24,21 @@ public class BreadUtil {
     // Method to check whether a given "a" value or a given "b" value is closer to a given "c" value
     public static double closer(double a, double b, double c) {
         return Math.abs(a-c) < Math.abs(b-c) ? a : b;
+    }
+
+    // Method to convert an any angle (in degrees) to an angle between 0 and 360
+    public static double angleTo360(double angle) {
+        double remainder = angle % 360;
+        if (remainder < 0.0) remainder = 360 + remainder;
+        return remainder;
+    }
+
+    // Method to convert any angle (in degrees) to angle angle between -180 and 180
+    public static double angleTo180Range(double angle) {
+        double remainder = angle % 360;
+        if (remainder > 180.0) remainder = -360 + remainder;
+        if (remainder < -180.0) remainder = 360 + remainder;
+        return remainder;
     }
 
     // Method to return the optimal camera angle given the robot position, turret to robot center, and target position

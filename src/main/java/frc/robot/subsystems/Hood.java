@@ -16,11 +16,12 @@ import frc.robot.commons.BreadUtil;
 public class Hood extends SubsystemBase {
 
     // Variables
+    private final double lowerBound = 20.0;
     private final CANSparkMax motor = new CANSparkMax(31, MotorType.kBrushless);
     private final DutyCycleEncoder absEncoder = new DutyCycleEncoder(2);
     private final CANEncoder motorEncoder = motor.getEncoder();
     private final PIDController pid = new PIDController(0.6, 0.0, 0.001);
-    private HoodOutput mode = HoodOutput.None;
+    private HoodOutput mode = HoodOutput.kNone;
     private double positionRef = 0.0;
     private double voltageRef = 0.0;
 
@@ -28,6 +29,7 @@ public class Hood extends SubsystemBase {
     public Hood() {
         setCurrentLimit(5, 10);
         absEncoder.setDistancePerRotation(24.0);
+        pid.setTolerance(3.0, 2.0);
     }
 
     // Method to get the rpm of the integrated motor encoder 
@@ -37,31 +39,31 @@ public class Hood extends SubsystemBase {
 
     // Method to get the distance of the absolute encoder
     public double getDistance() {
-        return absEncoder.getDistance();
+        return -absEncoder.getDistance() - lowerBound;
     }
 
     // Method to set the voltage reference of the hood
     public void setVoltageReference(double volts) {
-        mode = HoodOutput.Voltage;
+        mode = HoodOutput.kVoltage;
         voltageRef = MathUtil.clamp(volts, -12, 12);
     }
 
     // Method to set the position reference of the hood
     public void setPositionReference(double position) {
-        mode = HoodOutput.Position;
-        positionRef = MathUtil.clamp(position, 0, 62);
+        mode = HoodOutput.kPosition;
+        positionRef = MathUtil.clamp(position, -20.0, 42);
     }
 
     // Method to disable the hood
     public void disable() {
-        mode = HoodOutput.None;
+        mode = HoodOutput.kNone;
         voltageRef = 0.0;
         positionRef = 0.0;
     }
 
     // Method to check if the hood is at its position reference
     public boolean atPositionReference() {
-        return pid.atSetpoint() && mode == HoodOutput.Position;
+        return pid.atSetpoint() && mode == HoodOutput.kPosition;
     }
 
     // Method to set the current limit of the hood
@@ -70,25 +72,31 @@ public class Hood extends SubsystemBase {
         motor.setSecondaryCurrentLimit(secondary);
     }
 
+    // Method to reset the hood
+    private void reset() {
+        absEncoder.reset();
+    }
+
     // Periodic method
     @Override
     public void periodic() {
-        if (mode == HoodOutput.Position) {
+        if (mode == HoodOutput.kPosition) {
             double output = MathUtil.clamp(pid.calculate(getDistance(), positionRef), -12, 12);
             motor.setVoltage(-output);
-        } else if (mode == HoodOutput.Voltage) {
+        } else if (mode == HoodOutput.kVoltage) {
             motor.setVoltage(-voltageRef);
         } else {
             motor.setVoltage(0.0);
         }
         SmartDashboard.putNumber("Hood angle", getDistance());
+        SmartDashboard.putNumber("Hood speed", getVelocity());
     }
 
     // Hood output enum
     public enum HoodOutput {
-        Position,
-        Voltage,
-        None
+        kPosition,
+        kVoltage,
+        kNone
     }
 
     // Home hood command
@@ -114,12 +122,13 @@ public class Hood extends SubsystemBase {
         // IsFinished method
         @Override
         public boolean isFinished() {
-            return BreadUtil.atReference(getVelocity(), 0.0, 10.0, true) && timer.get() >= 0.25;
+            return BreadUtil.inBound(getVelocity(), -10.0, 10.0, true) && timer.get() >= 0.25;
         }
 
         // End method
         @Override
         public void end(boolean interrupted) {
+            Hood.this.reset();
             Hood.this.disable();
         }
 

@@ -4,51 +4,77 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPipelineResult;
 import org.photonvision.PhotonTrackedTarget;
 import org.photonvision.PhotonUtils;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-// Vision subsystem
+/**
+ * Vision subsystem
+ * This subsystem contains and updates vision information gathered from Photon vision
+ */
+
 public class Vision extends SubsystemBase {
 
     // Variables
     private final PhotonCamera camera = new PhotonCamera("BreadCam");
-    private final double cameraHeightMeters = 0.5;
-    private final double targetHeightMeters = 1.0;
-    private final double cameraPitchRadians = Units.degreesToRadians(23.5);
-    private double rotErrorTolerance = 38.0;
-    private double rotError;
-    
-    // Method to get the yaw
-    public Double getYaw() {
-        if (hasTarget()) return -camera.getLatestResult().getBestTarget().getYaw();
-        return null;
-    }
+    private final double cameraHeightMeters = 0.51;
+    private final double targetHeightMeters = 2.5;
+    private final double cameraPitchRadians = Units.degreesToRadians(31.0);
+    private double yaw;
+    private double pitch;
+    private double distance;
+    private boolean hasTargets;
+    public final VisionSupplier visionSupplier = new VisionSupplier();
 
-    // Method to get the distance 
-    public Double getDistance() {
-        if (hasTarget()) {
-            PhotonTrackedTarget target = camera.getLatestResult().getBestTarget();
-            return PhotonUtils.calculateDistanceToTargetMeters(
+    // Periodic method
+    @Override
+    public void periodic() {
+        PhotonPipelineResult result = camera.getLatestResult();
+        if (result.hasTargets()) {
+            hasTargets = true;
+            PhotonTrackedTarget target = result.getBestTarget();
+            yaw = target.getYaw();
+            pitch = target.getPitch();
+            distance = PhotonUtils.calculateDistanceToTargetMeters(
                 cameraHeightMeters, 
                 targetHeightMeters, 
                 cameraPitchRadians, 
-                target.getPitch()
+                Units.degreesToRadians(pitch)
             );
+        } else {
+            hasTargets = false;
         }
-        return null;
+        SmartDashboard.putNumber("Yaw", visionSupplier.getYaw());
+        SmartDashboard.putNumber("Pitch", visionSupplier.getPitch());
+        SmartDashboard.putNumber("Distance", visionSupplier.getDistance());
+        SmartDashboard.putBoolean("Has Targets", visionSupplier.hasTarget());
     }
+    
+    
+    // Vision supplier class
+    public class VisionSupplier {
 
-    // Method to update the camera reference estimate
-    public void updateRots(Rotation2d cameraRotRef, Rotation2d cameraRot) {
-        rotError = cameraRot.minus(cameraRotRef).getDegrees();
-    }
+        // Method to get the yaw
+        public Double getYaw() {
+            return -yaw;
+        }
+        
+        // Method to get the pitch
+        public Double getPitch() {
+            return pitch;
+        }
 
-    // Method to check whether vision has targets
-    public boolean hasTarget() {
-        PhotonPipelineResult result = camera.getLatestResult();
-        if (!result.hasTargets()) return false;
-        return Math.abs(rotError) < rotErrorTolerance;
+        // Method to get the distance 
+        public Double getDistance() {
+            return distance;
+        }
+
+        // Method to check whether vision has targets
+        public boolean hasTarget() {
+            return hasTargets;
+        }
+
     }
+    
 
 }
