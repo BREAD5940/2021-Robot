@@ -1,23 +1,18 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.swerve;
+
+import static frc.robot.Constants.*; 
 
 import java.util.function.Function;
 import com.kauailabs.navx.frc.AHRS;
-import com.revrobotics.CANEncoder;
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.ProfiledPIDController;
-import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.wpilibj.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
@@ -29,7 +24,6 @@ import edu.wpi.first.wpilibj.trajectory.Trajectory.State;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpiutil.math.MathUtil;
 import frc.robot.commons.BreadHolonomicDriveController;
 
 /**
@@ -38,7 +32,7 @@ import frc.robot.commons.BreadHolonomicDriveController;
  * Trajectory following code should be put here
  */
 
-public class Drive extends SubsystemBase {
+public class DriveSubsystem extends SubsystemBase {
 
     // Variables
     private boolean lockTranslationHeading = false;
@@ -52,21 +46,14 @@ public class Drive extends SubsystemBase {
             Units.degreesToRadians(120.0))
         )
     );
-    private static final double baseWidth = Units.inchesToMeters(27.0);
-    private static final double baseLength = Units.inchesToMeters(32.5);
-    private final double maxSpeedMetersPerSecond = 12.0/2.82;
     private static final double centerToCorner = Math.sqrt((baseWidth * baseWidth) + (baseLength * baseLength)) / 2.0;
-    public static final Translation2d flLoc = new Translation2d(baseLength / 2.0, baseWidth / 2.0);
-    public static final Translation2d frLoc = new Translation2d(baseLength / 2.0, -baseWidth / 2.0);
-    public static final Translation2d blLoc = new Translation2d(-baseLength / 2.0, baseWidth / 2.0);
-    public static final Translation2d brLoc = new Translation2d(-baseLength / 2.0, -baseWidth / 2.0);
-    private final SwerveModule fl = new SwerveModule(26, 25, 3, Units.degreesToRadians(43.5), false, false);
-    private final SwerveModule fr = new SwerveModule(42, 41, 0, Units.degreesToRadians(43.1), true, true);
-    private final SwerveModule bl = new SwerveModule(28, 27, 2, Units.degreesToRadians(78.8), false, false);
-    private final SwerveModule br = new SwerveModule(29, 30, 1, Units.degreesToRadians(133.7), true, true);
+    private final MK2SwerveModule fl = new MK2SwerveModule(26, 25, 3, Units.degreesToRadians(43.5), false, false);
+    private final MK2SwerveModule fr = new MK2SwerveModule(42, 41, 0, Units.degreesToRadians(43.1), true, true);
+    private final MK2SwerveModule bl = new MK2SwerveModule(28, 27, 2, Units.degreesToRadians(78.8), false, false);
+    private final MK2SwerveModule br = new MK2SwerveModule(29, 30, 1, Units.degreesToRadians(133.7), true, true);
     private final AHRS gyro = new AHRS(SPI.Port.kMXP);
     public static final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
-        flLoc, frLoc, blLoc, brLoc);
+        flLocation, frLocation, blLocation, brLocation);
     private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, gyro.getRotation2d());
     private Pose2d pose = odometry.getPoseMeters();
     private final Field2d field = new Field2d();
@@ -106,7 +93,7 @@ public class Drive extends SubsystemBase {
             states[2] = new SwerveModuleState(0.0, new Rotation2d(-crossAngle));
             states[3] = new SwerveModuleState(0.0, new Rotation2d(crossAngle));
         }
-        SwerveDriveKinematics.normalizeWheelSpeeds(states, output == Output.PERCENT ? 1.0 : maxSpeedMetersPerSecond);
+        SwerveDriveKinematics.normalizeWheelSpeeds(states, output == Output.PERCENT ? 1.0 : maxRobotVelocity);
         fl.setDesiredState(states[0], output);
         fr.setDesiredState(states[1], output);
         bl.setDesiredState(states[2], output);
@@ -204,88 +191,6 @@ public class Drive extends SubsystemBase {
         VELOCITY
     }
 
-    // Swerve module class
-    public class SwerveModule {
-    
-        // Variables
-        private final double wheelRadius = 0.0508;
-        private final CANSparkMax driveMotor;
-        private final CANSparkMax turnMotor;
-        private final CANEncoder driveEncoder;
-        private final AnalogEncoder turnEncoder;
-        private final PIDController turnPID = new PIDController(0.5, 0.0, 0.0001);
-        private final PIDController drivePID = new PIDController(0.01, 0.0, 0.0);
-        private final SimpleMotorFeedforward driveFF = new SimpleMotorFeedforward(0.0, 2.82);
-        private final boolean velEncoderReversed;
-        private final boolean driveReversed;
-    
-        // Constructor
-        public SwerveModule(int driveID, int turnID, int turnChannel, double turnOffset, boolean driveReversed, boolean velEncoderReversed) {
-            driveMotor = new CANSparkMax(driveID, MotorType.kBrushless);
-            turnMotor = new CANSparkMax(turnID, MotorType.kBrushless);
-            driveEncoder = driveMotor.getEncoder();
-            turnEncoder = new AnalogEncoder(turnChannel, turnOffset);
-            turnPID.enableContinuousInput(-Math.PI, Math.PI);
-            this.driveReversed = driveReversed;
-            this.velEncoderReversed = velEncoderReversed;
-        }
-    
-        // Method to get the velocity of this module
-        public double getVelocity() {
-            return velEncoderReversed ? -(((driveEncoder.getVelocity() * (1.0/7.04))/60.0) * 2 * Math.PI * wheelRadius) : 
-            (((driveEncoder.getVelocity() * (1.0/7.04))/60.0) * 2 * Math.PI * wheelRadius);
-        }
-
-        // Method to get the module angle
-        public double getModuleAngle() {
-            return turnEncoder.get();
-        }
-    
-        // Method to get the state of this module
-        public SwerveModuleState getState() {
-            return new SwerveModuleState(
-                getVelocity(), 
-                new Rotation2d(turnEncoder.get())
-            );
-        }
-    
-        // Method to set the desired state of this module
-        public void setDesiredState(SwerveModuleState desiredState, Output output) {
-            SwerveModuleState state = SwerveModuleState.optimize(desiredState, new Rotation2d(turnEncoder.get()));
-            double turnOutput = MathUtil.clamp(turnPID.calculate(turnEncoder.get(), state.angle.getRadians()), -0.5, 0.5);
-            turnMotor.set(turnOutput);
-            if (output == Output.PERCENT) {
-                driveMotor.set(driveReversed ? -state.speedMetersPerSecond : state.speedMetersPerSecond);
-            } else {
-                double driveFFOutput = driveFF.calculate(state.speedMetersPerSecond);
-                double drivePIDOutput = drivePID.calculate(getVelocity(), state.speedMetersPerSecond);
-                double driveOutput = MathUtil.clamp(driveFFOutput + drivePIDOutput, -12, 12);
-                driveMotor.setVoltage(driveReversed ? -driveOutput : driveOutput);
-            }
-        }  
-        
-    }
-
-    // Analog encoder class 
-    public class AnalogEncoder {
-
-        private final AnalogInput encoder; 
-        private final double offset;
-    
-        public AnalogEncoder(int channel, double offset) {
-            encoder = new AnalogInput(channel);
-            this.offset = offset;
-        }
-        
-        public double get() {
-            double angle = (((encoder.getVoltage() / RobotController.getVoltage5V()) * 2.0 * Math.PI) - offset) % (2.0 * Math.PI);
-            if (angle < -Math.PI) angle = (2 * Math.PI) + angle;
-            if (angle > Math.PI) angle = -(2 * Math.PI) + angle;
-            return -angle;
-        }
-         
-    }
-
     // Default drive command
     public class DefaultDriveCommand extends CommandBase {
 
@@ -297,13 +202,13 @@ public class Drive extends SubsystemBase {
         public DefaultDriveCommand (Function<Hand, Double> xFunc, Function<Hand, Double> yFunc) {
             this.xFunc = xFunc;
             this.yFunc = yFunc;
-            addRequirements(Drive.this);
+            addRequirements(DriveSubsystem.this);
         }
 
         // Execute method
         @Override
         public void execute() {
-            Drive.this.setSpeeds(
+            DriveSubsystem.this.setSpeeds(
                 -Math.signum(yFunc.apply(Hand.kRight)) * Math.abs(Math.pow(yFunc.apply(Hand.kRight), 3)), 
                 -Math.signum(xFunc.apply(Hand.kRight)) * Math.abs(Math.pow(xFunc.apply(Hand.kRight), 3)), 
                 -(Math.signum(xFunc.apply(Hand.kLeft)) * Math.abs(Math.pow(xFunc.apply(Hand.kLeft), 3))  / centerToCorner) * 0.7, 
@@ -315,7 +220,7 @@ public class Drive extends SubsystemBase {
         // End method
         @Override
         public void end(boolean interrupted) {
-            Drive.this.setSpeeds(0.0, 0.0, 0.0, Output.PERCENT, false);
+            DriveSubsystem.this.setSpeeds(0.0, 0.0, 0.0, Output.PERCENT, false);
         }
         
     }
@@ -331,13 +236,13 @@ public class Drive extends SubsystemBase {
         public TrajectoryFollowerCommand(Trajectory trajectory, Rotation2d startHeading) {
             this.trajectory = trajectory;
             this.startHeading = startHeading;
-            addRequirements(Drive.this);
+            addRequirements(DriveSubsystem.this);
         }   
         
         // Initialize method
         @Override
         public void initialize() {
-            Drive.this.reset(new Pose2d(trajectory.sample(0.0).poseMeters.getTranslation(), startHeading));
+            DriveSubsystem.this.reset(new Pose2d(trajectory.sample(0.0).poseMeters.getTranslation(), startHeading));
             autoController.setStartHeading(startHeading);
             timer.reset();
             timer.start();
@@ -348,11 +253,11 @@ public class Drive extends SubsystemBase {
         public void execute() {
             State poseRef = trajectory.sample(timer.get());
             ChassisSpeeds adjustedSpeeds = autoController.calculate(
-                Drive.this.getPose(), 
+                DriveSubsystem.this.getPose(), 
                 poseRef, 
                 startHeading
             );
-            Drive.this.setSpeeds(
+            DriveSubsystem.this.setSpeeds(
                 adjustedSpeeds.vxMetersPerSecond, 
                 adjustedSpeeds.vyMetersPerSecond, 
                 adjustedSpeeds.omegaRadiansPerSecond, 
@@ -370,7 +275,7 @@ public class Drive extends SubsystemBase {
         // End method
         @Override
         public void end(boolean interrupted) {
-            Drive.this.setSpeeds(0.0, 0.0, 0.0, Output.PERCENT, false);
+            DriveSubsystem.this.setSpeeds(0.0, 0.0, 0.0, Output.PERCENT, false);
         }
 
     }

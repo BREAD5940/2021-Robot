@@ -6,15 +6,11 @@ import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import frc.robot.subsystems.Accelerator;
-import frc.robot.subsystems.Drive;
-import frc.robot.subsystems.Flywheel;
-import frc.robot.subsystems.Hood;
-import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Spindexer;
 import frc.robot.subsystems.SuperStructure;
-import frc.robot.subsystems.Turret;
 import frc.robot.subsystems.Vision;
+import frc.robot.subsystems.shooter.*;
+import frc.robot.subsystems.swerve.*;
+import frc.robot.subsystems.intake.*;
 
 /**
  * Robot container class
@@ -25,13 +21,13 @@ public class RobotContainer {
   // Variables
   public final XboxController controller = new XboxController(0);
   public final Vision vision = new Vision();
-  public final Drive drive = new Drive();
-  public final Turret turret = new Turret();
-  public final Spindexer spindexer = new Spindexer();
-  public final Accelerator accelerator = new Accelerator();
-  public final Hood hood = new Hood();
-  public final Flywheel flywheel = new Flywheel();
-  public final Intake intake = new Intake();
+  public final DriveSubsystem drive = new DriveSubsystem();
+  public final TurretSubsystem turret = new TurretSubsystem();
+  public final SpindexerSubsystem spindexer = new SpindexerSubsystem();
+  public final AcceleratorSubsystem accelerator = new AcceleratorSubsystem();
+  public final HoodSubsystem hood = new HoodSubsystem();
+  public final FlywheelSubsystem flywheel = new FlywheelSubsystem();
+  public final IntakeSubsystem intake = new IntakeSubsystem();
   public final SuperStructure superStructure = new SuperStructure(
     turret, 
     spindexer, 

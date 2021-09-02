@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.wpilibj.Encoder;
@@ -13,7 +13,7 @@ import edu.wpi.first.wpiutil.math.MathUtil;
  * This subsystem contains all the methods and commands pertaining solely to the shooter
  */
 
-public class Flywheel extends SubsystemBase {
+public class FlywheelSubsystem extends SubsystemBase {
 
     // Variables
     private final WPI_TalonFX leftMotor = new WPI_TalonFX(22);
@@ -25,7 +25,7 @@ public class Flywheel extends SubsystemBase {
     private double reference = 0.0;
 
     // Constructor
-    public Flywheel() {
+    public FlywheelSubsystem() {
         encoder.setDistancePerPulse(1/2048.0);
         pid.setTolerance(150);
     }

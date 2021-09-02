@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.shooter;
 
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
@@ -13,7 +13,7 @@ import edu.wpi.first.wpiutil.math.MathUtil;
 import frc.robot.commons.BreadUtil;
 
 // Hood class
-public class Hood extends SubsystemBase {
+public class HoodSubsystem extends SubsystemBase {
 
     // Variables
     private final double lowerBound = 20.0;
@@ -26,7 +26,7 @@ public class Hood extends SubsystemBase {
     private double voltageRef = 0.0;
 
     // Constructor
-    public Hood() {
+    public HoodSubsystem() {
         setCurrentLimit(5, 10);
         absEncoder.setDistancePerRotation(24.0);
         pid.setTolerance(3.0, 2.0);
@@ -109,8 +109,8 @@ public class Hood extends SubsystemBase {
         public HomeHoodCommand() {
             timer = new Timer();
             timer.start();
-            addRequirements(Hood.this);
-            Hood.this.setCurrentLimit(5, 10);
+            addRequirements(HoodSubsystem.this);
+            HoodSubsystem.this.setCurrentLimit(5, 10);
         }
 
         // Initialize method
@@ -128,8 +128,8 @@ public class Hood extends SubsystemBase {
         // End method
         @Override
         public void end(boolean interrupted) {
-            Hood.this.reset();
-            Hood.this.disable();
+            HoodSubsystem.this.reset();
+            HoodSubsystem.this.disable();
         }
 
     }

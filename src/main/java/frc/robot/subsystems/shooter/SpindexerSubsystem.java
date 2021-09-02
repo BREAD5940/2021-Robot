@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.shooter;
 
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
@@ -17,7 +17,7 @@ import frc.robot.commons.BreadUtil;
  * This subsystem contains all the methods and commands pertaining solely to the spindexer
  */
 
-public class Spindexer extends SubsystemBase {
+public class SpindexerSubsystem extends SubsystemBase {
 
     // Variables
     private final double gearing = 1.0/((60.0/14)*(50.0/18)*(50.0/20));
@@ -33,7 +33,7 @@ public class Spindexer extends SubsystemBase {
     private double velocityRef = 0.0;
 
     // Constructor
-    public Spindexer() {
+    public SpindexerSubsystem() {
         motor.setSmartCurrentLimit(8);
         motor.setSecondaryCurrentLimit(10);
         absEncoder.setDistancePerRotation(360.0);
@@ -119,27 +119,27 @@ public class Spindexer extends SubsystemBase {
 
         // Constructor
         public TurnSpindexerCommand() {
-            addRequirements(Spindexer.this);
+            addRequirements(SpindexerSubsystem.this);
         }
 
         // Initalize method
         @Override
         public void initialize() {
-            reference = getReference(Spindexer.this.getDistance());
+            reference = getReference(SpindexerSubsystem.this.getDistance());
 
-            Spindexer.this.setPositionReference(reference);
+            SpindexerSubsystem.this.setPositionReference(reference);
         }
 
         // IsFinished method
         @Override
         public boolean isFinished() {
-            return Spindexer.this.atPositionReference();
+            return SpindexerSubsystem.this.atPositionReference();
         }
 
         // End method
         @Override
         public void end(boolean interrupted) {
-            Spindexer.this.disable();
+            SpindexerSubsystem.this.disable();
         }
 
         // Method to calculate the reference for this command
@@ -158,7 +158,7 @@ public class Spindexer extends SubsystemBase {
 
         // Constructor
         public Spin360Command() {
-            addRequirements(Spindexer.this);
+            addRequirements(SpindexerSubsystem.this);
         }
 
         // Initialize method
@@ -166,7 +166,7 @@ public class Spindexer extends SubsystemBase {
         public void initialize() {
             startPos = getDistance();
             setVelocityReference(20.0);
-            Spindexer.this.setRampRate(1.0);
+            SpindexerSubsystem.this.setRampRate(1.0);
         }
 
         // IsFinished method
@@ -178,8 +178,8 @@ public class Spindexer extends SubsystemBase {
         // End method
         @Override
         public void end(boolean interrupted) {
-            Spindexer.this.disable();
-            Spindexer.this.setRampRate(0.0);
+            SpindexerSubsystem.this.disable();
+            SpindexerSubsystem.this.setRampRate(0.0);
         }
 
     }

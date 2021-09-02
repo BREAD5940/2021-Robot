@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.interpolation.InterpolatingTable;
 import frc.robot.subsystems.Vision.VisionSupplier;
+import frc.robot.subsystems.shooter.*;
+import frc.robot.subsystems.intake.*;
 
 /**
  * Super structure subsystem
@@ -21,16 +23,24 @@ import frc.robot.subsystems.Vision.VisionSupplier;
 public class SuperStructure extends SubsystemBase {
 
     // Variables
-    private final Turret turret;
-    private final Spindexer spindexer;
-    private final Accelerator accelerator;
-    private final Hood hood;
-    private final Flywheel flywheel;
+    private final TurretSubsystem turret;
+    private final SpindexerSubsystem spindexer;
+    private final AcceleratorSubsystem accelerator;
+    private final HoodSubsystem hood;
+    private final FlywheelSubsystem flywheel;
     private final VisionSupplier visionSupplier;
-    private final Intake intake;
+    private final IntakeSubsystem intake;
 
     // Constructor
-    public SuperStructure(Turret turret, Spindexer spindexer, Accelerator accelerator, Hood hood, Flywheel flywheel, Intake intake, VisionSupplier visionSupplier) {
+    public SuperStructure(
+        TurretSubsystem turret, 
+        SpindexerSubsystem spindexer, 
+        AcceleratorSubsystem accelerator, 
+        HoodSubsystem hood, 
+        FlywheelSubsystem flywheel, 
+        IntakeSubsystem intake, 
+        VisionSupplier visionSupplier
+    ) {
         this.turret = turret;
         this.spindexer = spindexer;
         this.accelerator = accelerator;

@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.shooter;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -13,7 +13,7 @@ import frc.robot.commons.BreadUtil;
  * Turret subsystem
  * This subsystem contains all the methods and commands pertaining solely to the turret
  */
-public class Turret extends SubsystemBase {
+public class TurretSubsystem extends SubsystemBase {
 
     // Variables
     public final double offset = 311.6;
@@ -27,7 +27,7 @@ public class Turret extends SubsystemBase {
     private TurretOutput mode = TurretOutput.kLock;
 
     // Constructor
-    public Turret() {
+    public TurretSubsystem() {
         encoder.setDistancePerRotation(360.0);
         initialPos = encoder.getDistance();
         startPos = BreadUtil.angleTo180Range(initialPos - offset);  

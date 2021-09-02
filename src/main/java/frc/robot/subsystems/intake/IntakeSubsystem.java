@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.intake;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -10,14 +10,10 @@ import edu.wpi.first.wpiutil.math.MathUtil;
  * This subsystem contains all the methods and commands pertaining solely to the intake
  */
 
-public class Intake extends SubsystemBase {
+public class IntakeSubsystem extends SubsystemBase {
 
     // Variables
     private final CANSparkMax motor = new CANSparkMax(32, MotorType.kBrushless);
-
-    // Constructor
-    public Intake() { 
-    }
 
     // Method to set the intake to intake balls
     public void intake(double percent) {

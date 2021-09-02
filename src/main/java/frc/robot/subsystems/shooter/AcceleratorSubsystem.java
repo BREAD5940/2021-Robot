@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
@@ -13,7 +13,7 @@ import edu.wpi.first.wpiutil.math.MathUtil;
  * This subsystem contains all the methods and commands pertaining solely to the accelerator
  */
 
-public class Accelerator extends SubsystemBase {
+public class AcceleratorSubsystem extends SubsystemBase {
 
     // Variables
     private final WPI_TalonFX motor = new WPI_TalonFX(24);
@@ -23,7 +23,7 @@ public class Accelerator extends SubsystemBase {
     private double reference = 0.0;
 
     // Constructor
-    public Accelerator() {
+    public AcceleratorSubsystem() {
         pid.setTolerance(100);
         motor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 30, 30, 1.5), 0);
     }
