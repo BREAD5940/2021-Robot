@@ -27,16 +27,29 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commons.BreadHolonomicDriveController;
 
 /**
+ * ----------------------------------------------------------------------------------------
  * Drive subsystem
  * This subsystem contains all the methods and commands pertaining solely to the drivetrain
  * Trajectory following code should be put here
+ * ----------------------------------------------------------------------------------------
  */
 
 public class DriveSubsystem extends SubsystemBase {
 
-    // Variables
+    /**
+     * ---------
+     * VARIABLES
+     * ---------
+     */
+
+    /* Instantiates the AHRS gyro for field relative control and the measurement for a closed loop on translation heading */
+    private final AHRS gyro = new AHRS(SPI.Port.kMXP);
+
+    /* Instantiates variables for locking translation heading (to prevent drift) */
     private boolean lockTranslationHeading = false;
     private double lockTranslationTarget = 0.0; 
+
+    /* Instantiates translation locking controller and autonomus controller */
     private final PIDController lockTranslationController = new PIDController(0.01, 0, 0);
     private final BreadHolonomicDriveController autoController = new BreadHolonomicDriveController(
         new PIDController(1.0, 0.0, 0.0), 
@@ -46,19 +59,29 @@ public class DriveSubsystem extends SubsystemBase {
             Units.degreesToRadians(120.0))
         )
     );
-    private static final double centerToCorner = Math.sqrt((baseWidth * baseWidth) + (baseLength * baseLength)) / 2.0;
-    private final MK2SwerveModule fl = new MK2SwerveModule(26, 25, 3, Units.degreesToRadians(43.5), false, false);
-    private final MK2SwerveModule fr = new MK2SwerveModule(42, 41, 0, Units.degreesToRadians(43.1), true, true);
-    private final MK2SwerveModule bl = new MK2SwerveModule(28, 27, 2, Units.degreesToRadians(78.8), false, false);
-    private final MK2SwerveModule br = new MK2SwerveModule(29, 30, 1, Units.degreesToRadians(133.7), true, true);
-    private final AHRS gyro = new AHRS(SPI.Port.kMXP);
-    public static final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
-        flLocation, frLocation, blLocation, brLocation);
+
+    /* Instantiates the MK2Swerve Module classes */
+    private final MK2SwerveModule fl = new MK2SwerveModule(flDriveID, flTurnID, flAnalogID, flOffset, false, false);
+    private final MK2SwerveModule fr = new MK2SwerveModule(frDriveID, frTurnID, frAnalogID, frOffset, true, true);
+    private final MK2SwerveModule bl = new MK2SwerveModule(blDriveID, blTurnID, blAnalogID, blOffset, false, false);
+    private final MK2SwerveModule br = new MK2SwerveModule(brDriveID, brTurnID, brAnalogID, brOffset, true, true);
+
+    /* Instantiates the kinematics & odometry classes */
+    public static final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(flLocation, frLocation, blLocation, brLocation);
     private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, gyro.getRotation2d());
-    private Pose2d pose = odometry.getPoseMeters();
+
+    /* Instantiates a Pose2d and Field2d object to keep track of the robot's position on the field */
+     private Pose2d pose = odometry.getPoseMeters();
     private final Field2d field = new Field2d();
 
-    // Method to set the speeds of the robot
+    
+    /**
+     * -------
+     * METHODS
+     * -------
+     */
+
+    /* Method to set the speeds of the robot */
     public void setSpeeds(double xSpeed, double ySpeed, double rot, Output output, boolean autonomousMode) {
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(new ChassisSpeeds(0, 0, 0));
         if (!(Math.abs(rot) < 0.01)) {
@@ -101,7 +124,7 @@ public class DriveSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("FL Setpoint", states[0].speedMetersPerSecond);
     }
 
-    // Method to update odometry
+    /* Method to update odometry */
     public void updateOdometry() {
         pose = odometry.update(
             gyro.getRotation2d(), 
@@ -114,15 +137,13 @@ public class DriveSubsystem extends SubsystemBase {
         SmartDashboard.putData(field);
     }
 
-    // Method to reset the drive
+    /* Method to reset the drive */
     public void reset(Pose2d pose) {
-        gyro.reset();
-        gyro.calibrate();
         odometry.resetPosition(pose, gyro.getRotation2d());
         pose = odometry.getPoseMeters();
     }
 
-    // Method to the idle mode of the drive motors
+    /* Method to the idle mode of the drive motors */
     public void setIdleModes(IdleMode mode) {
         fl.driveMotor.setIdleMode(mode);
         fr.driveMotor.setIdleMode(mode);
@@ -130,7 +151,7 @@ public class DriveSubsystem extends SubsystemBase {
         br.driveMotor.setIdleMode(mode);
     }
 
-    // Method to get the outputs of the drive motors
+    /* Method to get the outputs of the drive motors */
     public double[] getOutputs() {
         double[] outputs = {
             fl.driveMotor.getAppliedOutput(),
@@ -141,7 +162,7 @@ public class DriveSubsystem extends SubsystemBase {
         return outputs;
     }
 
-    // Method to get the velocities of the drive motors
+    /* Method to get the velocities of the drive motors */
     public double[] getVelocities() {
         double[] velocities = {
             fl.getVelocity(),
@@ -152,7 +173,7 @@ public class DriveSubsystem extends SubsystemBase {
         return velocities;
     }
 
-    // Method to get the angles of the modules
+    /* Method to get the angles of the modules */
     public double[] getAngles() {
         double[] angles = {
             fl.getModuleAngle(),
@@ -163,17 +184,17 @@ public class DriveSubsystem extends SubsystemBase {
         return angles;
     }
 
-    // Method to get the current position of the robot
+    /* Method to get the current position of the robot */
     public Pose2d getPose() {
         return pose;
     }
 
-    // Method to get the current angle of the robot
+    /* Method to get the current angle of the robot */
     public double getDistance() {
         return -gyro.getAngle();
     }
 
-    // Periodic method
+    /* Periodic method */
     @Override
     public void periodic() {
         updateOdometry();
@@ -185,27 +206,31 @@ public class DriveSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Robot Angle", getDistance());  
     }
 
-    // Output Enum
+    /* Output enum */
     public enum Output {
         PERCENT, 
         VELOCITY
     }
 
-    // Default drive command
+
+    /**
+     * --------
+     * COMMANDS
+     * --------
+     */
+
+    /* Default Drive Command */
     public class DefaultDriveCommand extends CommandBase {
 
-        // Variables
         private final Function<Hand, Double> xFunc;
         private final Function<Hand, Double> yFunc;
 
-        // Constructor
         public DefaultDriveCommand (Function<Hand, Double> xFunc, Function<Hand, Double> yFunc) {
             this.xFunc = xFunc;
             this.yFunc = yFunc;
             addRequirements(DriveSubsystem.this);
         }
 
-        // Execute method
         @Override
         public void execute() {
             DriveSubsystem.this.setSpeeds(
@@ -217,7 +242,6 @@ public class DriveSubsystem extends SubsystemBase {
             );
         }
 
-        // End method
         @Override
         public void end(boolean interrupted) {
             DriveSubsystem.this.setSpeeds(0.0, 0.0, 0.0, Output.PERCENT, false);
@@ -225,21 +249,19 @@ public class DriveSubsystem extends SubsystemBase {
         
     }
 
-    // Follow Trajectory Command
+    /* Trajectory Follower Command */
     public class TrajectoryFollowerCommand extends CommandBase {
 
         private final Timer timer = new Timer();
         private final Trajectory trajectory;
         private final Rotation2d startHeading;
 
-        // Constructor
         public TrajectoryFollowerCommand(Trajectory trajectory, Rotation2d startHeading) {
             this.trajectory = trajectory;
             this.startHeading = startHeading;
             addRequirements(DriveSubsystem.this);
         }   
         
-        // Initialize method
         @Override
         public void initialize() {
             DriveSubsystem.this.reset(new Pose2d(trajectory.sample(0.0).poseMeters.getTranslation(), startHeading));
@@ -248,15 +270,10 @@ public class DriveSubsystem extends SubsystemBase {
             timer.start();
         }
 
-        // Execute method
         @Override
         public void execute() {
             State poseRef = trajectory.sample(timer.get());
-            ChassisSpeeds adjustedSpeeds = autoController.calculate(
-                DriveSubsystem.this.getPose(), 
-                poseRef, 
-                startHeading
-            );
+            ChassisSpeeds adjustedSpeeds = autoController.calculate(DriveSubsystem.this.getPose(), poseRef, startHeading);
             DriveSubsystem.this.setSpeeds(
                 adjustedSpeeds.vxMetersPerSecond, 
                 adjustedSpeeds.vyMetersPerSecond, 
@@ -266,13 +283,11 @@ public class DriveSubsystem extends SubsystemBase {
             );
         }
 
-        // IsFinished method
         @Override
         public boolean isFinished() {
             return timer.get() >= trajectory.getTotalTimeSeconds();
         }
 
-        // End method
         @Override
         public void end(boolean interrupted) {
             DriveSubsystem.this.setSpeeds(0.0, 0.0, 0.0, Output.PERCENT, false);

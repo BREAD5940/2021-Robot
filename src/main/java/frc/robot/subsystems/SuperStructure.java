@@ -11,27 +11,29 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.interpolation.InterpolatingTable;
-import frc.robot.subsystems.Vision.VisionSupplier;
+import frc.robot.subsystems.vision.Vision.VisionSupplier;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.intake.*;
 
 /**
+ * 
  * Super structure subsystem
  * All multi-subsystem interactions (methods, commands, ect.) should be put here
+ * 
  */
 
 public class SuperStructure extends SubsystemBase {
 
-    // Variables
-    private final TurretSubsystem turret;
-    private final SpindexerSubsystem spindexer;
-    private final AcceleratorSubsystem accelerator;
-    private final HoodSubsystem hood;
-    private final FlywheelSubsystem flywheel;
-    private final VisionSupplier visionSupplier;
-    private final IntakeSubsystem intake;
+    /* Declares all of the subsystems */
+    public final TurretSubsystem turret;
+    public final SpindexerSubsystem spindexer;
+    public final AcceleratorSubsystem accelerator;
+    public final HoodSubsystem hood;
+    public final FlywheelSubsystem flywheel;
+    public final VisionSupplier visionSupplier;
+    public final IntakeSubsystem intake;
 
-    // Constructor
+    /* Instantiates all of the subsystems in the constructor */
     public SuperStructure(
         TurretSubsystem turret, 
         SpindexerSubsystem spindexer, 
@@ -50,22 +52,20 @@ public class SuperStructure extends SubsystemBase {
         this.intake = intake;
     }   
 
-    // Method to track a target
+    /* Method to track a target */
     public void track() { 
-        // if (visionSupplier.hasTarget()) {
-        //     hood.setPositionReference(InterpolatingTable.get(visionSupplier.getDistance()).hoodAngle);
-        //     flywheel.setReference(InterpolatingTable.get(visionSupplier.getDistance()).rpm);
-        //     turret.setPosition(turret.getDistance() + visionSupplier.getYaw() + InterpolatingTable.get(visionSupplier.getDistance()).offset);
-        // } else {
-        //     hood.setPositionReference(0.0);
-        //     flywheel.setReference(0.0);
-        //     turret.lock();
-        // }
-        hood.setPositionReference(0);
-        flywheel.setReference(4000.0);
+        if (visionSupplier.hasTarget()) {
+            hood.setPositionReference(InterpolatingTable.get(visionSupplier.getDistance()).hoodAngle);
+            flywheel.setReference(InterpolatingTable.get(visionSupplier.getDistance()).rpm);
+            turret.setPosition(turret.getDistance() + visionSupplier.getYaw() + InterpolatingTable.get(visionSupplier.getDistance()).offset);
+        } else {
+            hood.setPositionReference(0.0);
+            flywheel.setReference(4000.0);
+            turret.lock();
+        }
     }
 
-    // Method to set all subsystems to a neutral state
+    /* Method to set all subsystems to a neutral state */
     public void disable() {
         this.turret.lock();
         this.spindexer.disable();
@@ -75,7 +75,7 @@ public class SuperStructure extends SubsystemBase {
         this.intake.disable();
     }
 
-    // Homing routine command
+    /* Homing routine command */
     public class HomingRoutine extends SequentialCommandGroup {
         public HomingRoutine() {
             addRequirements(turret, hood, spindexer, accelerator, flywheel, intake, SuperStructure.this);
@@ -87,7 +87,7 @@ public class SuperStructure extends SubsystemBase {
         }
     }
 
-    // Idle command
+    /* Idle command */
     public class IdleCommand extends CommandBase {
         private final Function<Hand, Double> trigger;
         public IdleCommand(Function<Hand, Double> trigger) {
@@ -120,10 +120,9 @@ public class SuperStructure extends SubsystemBase {
         }
     }
 
-    // Shoot command
+    /* Shoot command */
     public class ShootCommand extends SequentialCommandGroup {
 
-        // Constructor
         public ShootCommand() {
             addRequirements(turret, hood, spindexer, accelerator, flywheel, intake, SuperStructure.this);
             addCommands(
