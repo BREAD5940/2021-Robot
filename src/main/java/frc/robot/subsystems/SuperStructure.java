@@ -23,7 +23,7 @@ import frc.robot.subsystems.intake.*;
  */
 
 public class SuperStructure extends SubsystemBase {
-
+    
     /* Declares all of the subsystems */
     public final TurretSubsystem turret;
     public final SpindexerSubsystem spindexer;
@@ -57,17 +57,21 @@ public class SuperStructure extends SubsystemBase {
         if (visionSupplier.hasTarget()) {
             hood.setPositionReference(InterpolatingTable.get(visionSupplier.getDistance()).hoodAngle);
             flywheel.setReference(InterpolatingTable.get(visionSupplier.getDistance()).rpm);
-            turret.setPosition(turret.getDistance() + visionSupplier.getYaw() + InterpolatingTable.get(visionSupplier.getDistance()).offset);
+            turret.setTrackMeasurement(visionSupplier.getYaw());
         } else {
             hood.setPositionReference(0.0);
             flywheel.setReference(4000.0);
-            turret.lock();
+            turret.setLock();
         }
+        // hood.setPositionReference(SmartDashboard.getNumber("Hood-Setpoint", 0.0));
+        // flywheel.setReference(SmartDashboard.getNumber("Flywheel-Setpoint", 0.0));
+        // turret.setYaw(visionSupplier.getYaw());
+
     }
 
     /* Method to set all subsystems to a neutral state */
     public void disable() {
-        this.turret.lock();
+        this.turret.setLock();
         this.spindexer.disable();
         this.accelerator.disable();
         this.flywheel.disable();
@@ -130,7 +134,7 @@ public class SuperStructure extends SubsystemBase {
                     spindexer.new TurnSpindexerCommand(),
                     new RunCommand(SuperStructure.this::track)
                         .beforeStarting(() -> accelerator.setReference(-100), accelerator)
-                ).beforeStarting(turret::enable),
+                ).beforeStarting(turret::setTrack),
                 new RunCommand(SuperStructure.this::track)
                     .beforeStarting(() -> accelerator.setReference(5000), accelerator)
                     .withInterrupt(() -> accelerator.atReference() && flywheel.atReference() && hood.atPositionReference()),

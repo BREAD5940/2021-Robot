@@ -55,17 +55,17 @@ public class Vision extends SubsystemBase {
     public class VisionSupplier {
 
         // Method to get the yaw
-        public Double getYaw() {
+        public double getYaw() {
             return -yaw;
         }
         
         // Method to get the pitch
-        public Double getPitch() {
+        public double getPitch() {
             return pitch;
         }
 
         // Method to get the distance 
-        public Double getDistance() {
+        public double getDistance() {
             return distance;
         }
 

@@ -1,5 +1,4 @@
 package frc.robot;
-
 import com.revrobotics.CANSparkMax.IdleMode;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
@@ -8,6 +7,8 @@ import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.autonomus.routines.FivePCAutoLeft;
 
 // Robot class
 public class Robot extends TimedRobot {
@@ -23,8 +24,6 @@ public class Robot extends TimedRobot {
     m_robotContainer.drive.reset(new Pose2d(new Translation2d(), new Rotation2d()));
     SmartDashboard.putNumber("Flywheel-Setpoint", 4000.0);
     SmartDashboard.putNumber("Hood-Setpoint", 0.0);
-    SmartDashboard.putNumber("Turret-Offset", 0.0);
-    SmartDashboard.putNumber("Interpolation shooter setpoint", 0.0);
   }
 
   // Robot periodic
@@ -39,7 +38,7 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().cancelAll();
     m_robotContainer.flywheel.disable();
     m_robotContainer.accelerator.disable();
-    m_robotContainer.turret.disable();
+    m_robotContainer.turret.setLock();
     m_robotContainer.intake.disable();
     m_robotContainer.spindexer.disable();
   }
@@ -51,11 +50,8 @@ public class Robot extends TimedRobot {
   // Autonomus Init
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
-    }
     m_robotContainer.drive.setIdleModes(IdleMode.kBrake);
+    new FivePCAutoLeft(m_robotContainer.superStructure, m_robotContainer.drive).schedule();
   }
 
   // Autonomus periodic
@@ -70,12 +66,14 @@ public class Robot extends TimedRobot {
     }
     m_robotContainer.drive.reset(new Pose2d(new Translation2d(), new Rotation2d()));
     m_robotContainer.drive.setIdleModes(IdleMode.kBrake);
+    m_robotContainer.turret.setLock();
+    m_robotContainer.intake.runCompressor();
     m_robotContainer.superStructure.new HomingRoutine().schedule();
   }
 
   // Teleop Periodic
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() { }
 
   // Test init
   @Override

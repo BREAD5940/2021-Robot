@@ -20,7 +20,7 @@ public class FlywheelSubsystem extends SubsystemBase {
     private final WPI_TalonFX rightMotor = new WPI_TalonFX(23);
     private final Encoder encoder = new Encoder(3, 4);
     private final PIDController pid = new PIDController(0.01, 0.0, 0.0);
-    private final SimpleMotorFeedforward ff = new SimpleMotorFeedforward(0.72, 0.00235109717);
+    private final SimpleMotorFeedforward ff = new SimpleMotorFeedforward(0.72, 0.00225);
     private FlywheelOutput mode = FlywheelOutput.kNone;
     private double reference = 0.0;
 

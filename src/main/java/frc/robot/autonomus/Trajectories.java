@@ -21,21 +21,21 @@ import edu.wpi.first.wpilibj.util.Units;
 public class Trajectories {
     
     /* 8 PC auto part 1 */
-    public static Trajectory EIGHT_PC_AUTO_P1 = generateTrajectory(
-        2.0,
-        2.0,
+    public static Trajectory FIVE_PC_AUTO_LEFT_P1 = generateTrajectory(
+        1.5,
+        2.5,
         List.of(
-            new Pose2d(Units.feetToMeters(10.753), Units.feetToMeters(2.348), Rotation2d.fromDegrees(0)),
-            new Pose2d(Units.feetToMeters(21.705), Units.feetToMeters(1.912), Rotation2d.fromDegrees(0)),
-            new Pose2d(Units.feetToMeters(15.977), Units.feetToMeters(13.539), Rotation2d.fromDegrees(120.759)),
-            new Pose2d(Units.feetToMeters(11.484), Units.feetToMeters(18.718), Rotation2d.fromDegrees(-178.954))
-        ),
+            new Pose2d(Units.feetToMeters(10.789), Units.feetToMeters(2.535), Rotation2d.fromDegrees(0)),
+            new Pose2d(Units.feetToMeters(16.135), Units.feetToMeters(1.987), Rotation2d.fromDegrees(0)),
+            new Pose2d(Units.feetToMeters(21.225), Units.feetToMeters(1.747), Rotation2d.fromDegrees(1.075))
+        ),        
         true
     );
 
     /* 8 PC auto part 2 */
     public static Trajectory EIGHT_PC_AUTO_P2 = generateTrajectory(
-        2.0, 
+        1.0, 
+
         2.0, 
         List.of(
             new Pose2d(Units.feetToMeters(11.484), Units.feetToMeters(17.718), Rotation2d.fromDegrees(1.821)),

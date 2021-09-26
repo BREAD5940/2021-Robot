@@ -54,6 +54,11 @@ public class HoodSubsystem extends SubsystemBase {
         positionRef = MathUtil.clamp(position, -20.0, 42);
     }
 
+    // Method to get the position reference 
+    public double getReference() {
+        return positionRef;
+    }
+
     // Method to disable the hood
     public void disable() {
         mode = HoodOutput.kNone;

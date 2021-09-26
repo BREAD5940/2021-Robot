@@ -29,7 +29,7 @@ public class Constants {
     public static final int blAnalogID = 2;
     public static final int brAnalogID = 1;
     public static final double flOffset = Units.degreesToRadians(43.5);
-    public static final double frOffset = Units.degreesToRadians(43.1);
+    public static final double frOffset = Units.degreesToRadians(44.1);
     public static final double blOffset = Units.degreesToRadians(78.8);
-    public static final double brOffset = Units.degreesToRadians(133.7);
+    public static final double brOffset = Units.degreesToRadians(292.7);
 }

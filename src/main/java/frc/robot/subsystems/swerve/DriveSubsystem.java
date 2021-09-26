@@ -204,6 +204,7 @@ public class DriveSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("BL", angles[2]);    
         SmartDashboard.putNumber("BR", angles[3]);  
         SmartDashboard.putNumber("Robot Angle", getDistance());  
+        SmartDashboard.putNumber("FR Raw", fr.turnEncoder.getRaw());
     }
 
     /* Output enum */

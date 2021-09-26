@@ -5,6 +5,8 @@ import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.vision.Vision;
@@ -54,6 +56,16 @@ public class RobotContainer {
     new JoystickButton(controller, Button.kA.value).whenPressed(
       superStructure.new ShootCommand()
     ); 
+
+    new JoystickButton(controller, Button.kX.value).whenPressed(
+      intake.extendIntake
+    );
+
+    new JoystickButton(controller, Button.kY.value).whenPressed(
+      intake.retractIntake
+    );
+
+
   }
 
   // Method to get the autonomus command
