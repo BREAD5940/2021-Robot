@@ -2,6 +2,7 @@ package frc.robot.autonomus.routines;
 
 import java.time.Instant;
 
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -25,8 +26,8 @@ public class FivePCAutoLeft extends SequentialCommandGroup {
         addRequirements(superStructure, drive);
 
         addCommands(
-            superStructure.intake.extendIntake,
-            drive.new TrajectoryFollowerCommand(Trajectories.FIVE_PC_AUTO_LEFT_P1, Trajectories.FIVE_PC_AUTO_LEFT_P1.sample(0.0).poseMeters.getRotation())
+            superStructure.intake.new ExtendIntakeCommand(),
+            drive.new TrajectoryFollowerCommand(Trajectories.FIVE_PC_AUTO_LEFT_P1, Rotation2d.fromDegrees(drive.getDistance()))
                 .beforeStarting(() -> {
                     superStructure.intake.intake(0.8);
                     superStructure.spindexer.setVelocityReference(20.0);
@@ -35,6 +36,15 @@ public class FivePCAutoLeft extends SequentialCommandGroup {
                     superStructure.intake.disable();
                     superStructure.spindexer.disable();
                 })
+            // drive.new TrajectoryFollowerCommand(Trajectories.FIVE_PC_AUTO_LEFT_P2, Rotation2d.fromDegrees(drive.getDistance()))
+            //     .beforeStarting(() -> {
+            //         superStructure.intake.intake(0.8);
+            //         superStructure.spindexer.setVelocityReference(20.0);
+            //     })
+            //     .andThen(() -> { 
+            //         superStructure.intake.disable();
+            //         superStructure.spindexer.disable();
+            //     }),
             // superStructure.new ShootCommand().alongWith(new RunCommand(() -> drive.setSpeeds(0.0, 0.0, 0.0, Output.PERCENT, false)))
         );
     }

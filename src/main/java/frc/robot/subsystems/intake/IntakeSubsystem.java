@@ -65,16 +65,26 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     // Extend Intake Command
-    public SequentialCommandGroup extendIntake = new SequentialCommandGroup(
-        new InstantCommand(this::retractSmolSolenoids),
-        new WaitCommand(0.1),
-        new InstantCommand(this::extendBigSolenoids)
-    );
+    public class ExtendIntakeCommand extends SequentialCommandGroup {
+        public ExtendIntakeCommand() {
+            addRequirements(IntakeSubsystem.this);
+            addCommands(
+                new InstantCommand(IntakeSubsystem.this::retractSmolSolenoids),
+                new WaitCommand(0.1),
+                new InstantCommand(IntakeSubsystem.this::extendBigSolenoids)
+            );
+        }
+    }
 
     // Retract Intake Command
-    public SequentialCommandGroup retractIntake = new SequentialCommandGroup(
-        new InstantCommand(this::retractBigSolenoids),
-        new WaitCommand(0.5),
-        new InstantCommand(this::extendSmolSolenoids)
-    );
+    public class RetractIntakeCommand extends SequentialCommandGroup {
+        public RetractIntakeCommand() {
+            addRequirements(IntakeSubsystem.this);
+            addCommands(
+                new InstantCommand(IntakeSubsystem.this::retractBigSolenoids),
+                new WaitCommand(0.5),
+                new InstantCommand(IntakeSubsystem.this::extendSmolSolenoids)
+            );
+        }
+    }
 }

@@ -121,7 +121,6 @@ public class DriveSubsystem extends SubsystemBase {
         fr.setDesiredState(states[1], output);
         bl.setDesiredState(states[2], output);
         br.setDesiredState(states[3], output);
-        SmartDashboard.putNumber("FL Setpoint", states[0].speedMetersPerSecond);
     }
 
     /* Method to update odometry */
@@ -198,13 +197,6 @@ public class DriveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         updateOdometry();
-        double[] angles = getAngles();
-        SmartDashboard.putNumber("FL", angles[0]);   
-        SmartDashboard.putNumber("FR", angles[1]);     
-        SmartDashboard.putNumber("BL", angles[2]);    
-        SmartDashboard.putNumber("BR", angles[3]);  
-        SmartDashboard.putNumber("Robot Angle", getDistance());  
-        SmartDashboard.putNumber("FR Raw", fr.turnEncoder.getRaw());
     }
 
     /* Output enum */

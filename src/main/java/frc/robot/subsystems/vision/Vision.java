@@ -4,7 +4,6 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPipelineResult;
 import org.photonvision.PhotonTrackedTarget;
 import org.photonvision.PhotonUtils;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -44,10 +43,6 @@ public class Vision extends SubsystemBase {
         } else {
             hasTargets = false;
         }
-        SmartDashboard.putNumber("Yaw", visionSupplier.getYaw());
-        SmartDashboard.putNumber("Pitch", visionSupplier.getPitch());
-        SmartDashboard.putNumber("Distance", visionSupplier.getDistance());
-        SmartDashboard.putBoolean("Has Targets", visionSupplier.hasTarget());
     }
     
     

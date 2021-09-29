@@ -4,7 +4,6 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
 
@@ -70,8 +69,6 @@ public class FlywheelSubsystem extends SubsystemBase {
             rightMotor.setVoltage(0.0);
             leftMotor.setVoltage(0.0);
         }
-        SmartDashboard.putNumber("Flywheel Velocity", getVelocity());
-        SmartDashboard.putNumber("Flywheel Reference", reference);
     }
 
     // Flywheel output enum

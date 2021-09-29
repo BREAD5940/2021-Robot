@@ -82,7 +82,7 @@ public class SuperStructure extends SubsystemBase {
     /* Homing routine command */
     public class HomingRoutine extends SequentialCommandGroup {
         public HomingRoutine() {
-            addRequirements(turret, hood, spindexer, accelerator, flywheel, intake, SuperStructure.this);
+            addRequirements(SuperStructure.this);
             addCommands(
                 hood.new HomeHoodCommand(),
                 new InstantCommand(() -> hood.setPositionReference(0.0), hood),
@@ -95,7 +95,7 @@ public class SuperStructure extends SubsystemBase {
     public class IdleCommand extends CommandBase {
         private final Function<Hand, Double> trigger;
         public IdleCommand(Function<Hand, Double> trigger) {
-            addRequirements(turret, hood, spindexer, accelerator, flywheel, intake, SuperStructure.this);
+            addRequirements(SuperStructure.this);
             this.trigger = trigger;
         }
 
@@ -128,22 +128,22 @@ public class SuperStructure extends SubsystemBase {
     public class ShootCommand extends SequentialCommandGroup {
 
         public ShootCommand() {
-            addRequirements(turret, hood, spindexer, accelerator, flywheel, intake, SuperStructure.this);
+            addRequirements(SuperStructure.this);
             addCommands(
                 new ParallelDeadlineGroup(
                     spindexer.new TurnSpindexerCommand(),
                     new RunCommand(SuperStructure.this::track)
-                        .beforeStarting(() -> accelerator.setReference(-100), accelerator)
+                        .beforeStarting(() -> accelerator.setReference(-100))
                 ).beforeStarting(turret::setTrack),
                 new RunCommand(SuperStructure.this::track)
-                    .beforeStarting(() -> accelerator.setReference(5000), accelerator)
+                    .beforeStarting(() -> accelerator.setReference(5000))
                     .withInterrupt(() -> accelerator.atReference() && flywheel.atReference() && hood.atPositionReference()),
                 new ParallelDeadlineGroup(
                     new SequentialCommandGroup(
                         spindexer.new Spin360Command(),
                         new WaitCommand(0.75)
                     ), 
-                    new RunCommand(SuperStructure.this::track, hood, flywheel, turret)
+                    new RunCommand(SuperStructure.this::track)
                 ),
                 new InstantCommand(SuperStructure.this::disable)
             );

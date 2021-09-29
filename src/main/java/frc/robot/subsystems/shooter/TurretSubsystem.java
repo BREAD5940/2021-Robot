@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.MedianFilter;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
+import frc.robot.commons.BreadUtil;
 
 // /**
 //  * Turret subsystem
@@ -146,6 +147,7 @@ import edu.wpi.first.wpiutil.math.MathUtil;
  public class TurretSubsystem extends SubsystemBase {
 
 
+    double offset = 311; 
     private final CANSparkMax motor = new CANSparkMax(33, MotorType.kBrushless);
     public final DutyCycleEncoder encoder = new DutyCycleEncoder(1);
     private final PIDController pid = new PIDController(0.05, 0.0, 0.001);
@@ -157,11 +159,11 @@ import edu.wpi.first.wpiutil.math.MathUtil;
     public TurretSubsystem() {
         pid.setTolerance(2);
         encoder.setDistancePerRotation(360.0);
+        lockMeasurement = encoder.getDistance();
     }
 
     public void setLock() {
         mode = TurretOutput.kLock;
-        lockMeasurement = encoder.getDistance();
     }
 
     public void setTrack() {
@@ -172,10 +174,22 @@ import edu.wpi.first.wpiutil.math.MathUtil;
         trackMeasurement = filter.calculate(measurement);
     }
 
+    public void setLockMeasurement(double measurement) {
+        lockMeasurement = MathUtil.clamp(measurement, -180, 180);
+    }
+
+    public double getAngle() {
+        return -BreadUtil.angleTo180Range(encoder.getDistance()-offset);
+    }
+
+    public double getRawAngle() {
+        return -BreadUtil.angleTo180Range(encoder.getDistance());
+    }
+
     @Override
     public void periodic() {
         if (mode==TurretOutput.kLock) {
-            double output = MathUtil.clamp(-pid.calculate(encoder.getDistance(), lockMeasurement), -2, 2);
+            double output = MathUtil.clamp(pid.calculate(getRawAngle(), lockMeasurement), -2, 2);
             motor.setVoltage(output);
         } else {
             double output = MathUtil.clamp(-pid.calculate(trackMeasurement, 0.0), -1, 1);

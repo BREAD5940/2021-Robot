@@ -4,7 +4,6 @@ import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
 
@@ -69,7 +68,6 @@ public class AcceleratorSubsystem extends SubsystemBase {
         } else {
             motor.setVoltage(0.0);
         }
-        SmartDashboard.putNumber("Accelerator Velocity", getVelocity());
     }
 
     // Accelerator Output enum

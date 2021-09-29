@@ -6,7 +6,6 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.controller.PIDController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
@@ -93,8 +92,6 @@ public class HoodSubsystem extends SubsystemBase {
         } else {
             motor.setVoltage(0.0);
         }
-        SmartDashboard.putNumber("Hood angle", getDistance());
-        SmartDashboard.putNumber("Hood speed", getVelocity());
     }
 
     // Hood output enum

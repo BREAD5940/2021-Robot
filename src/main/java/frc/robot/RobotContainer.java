@@ -5,8 +5,6 @@ import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.vision.Vision;
@@ -20,8 +18,11 @@ import frc.robot.subsystems.intake.*;
  */
 public class RobotContainer {
   
-  // Variables
-  public final XboxController controller = new XboxController(0);
+  // Controllers
+  public final XboxController driver = new XboxController(0);
+  public final XboxController operator = new XboxController(1);
+
+  // Subsystems
   public final Vision vision = new Vision();
   public final DriveSubsystem drive = new DriveSubsystem();
   public final TurretSubsystem turret = new TurretSubsystem();
@@ -30,6 +31,8 @@ public class RobotContainer {
   public final HoodSubsystem hood = new HoodSubsystem();
   public final FlywheelSubsystem flywheel = new FlywheelSubsystem();
   public final IntakeSubsystem intake = new IntakeSubsystem();
+
+  // Superstructure
   public final SuperStructure superStructure = new SuperStructure(
     turret, 
     spindexer, 
@@ -43,28 +46,30 @@ public class RobotContainer {
   // Constructor
   public RobotContainer() {
     configureButtonBindings();
-    drive.setDefaultCommand(drive. new DefaultDriveCommand(controller::getX, controller::getY));
-    superStructure.setDefaultCommand(superStructure.new IdleCommand(controller::getTriggerAxis));
+    drive.setDefaultCommand(drive. new DefaultDriveCommand(driver::getX, driver::getY));
+    superStructure.setDefaultCommand(superStructure.new IdleCommand(driver::getTriggerAxis));
   }
 
   // Method to configure the button bindings
   private void configureButtonBindings() {
-    new JoystickButton(controller, Button.kStart.value).whenPressed(
+
+    // Driver buttons
+    new JoystickButton(driver, Button.kStart.value).whenPressed(
       new InstantCommand(() -> drive.reset(new Pose2d()), drive)
     );
 
-    new JoystickButton(controller, Button.kA.value).whenPressed(
-      superStructure.new ShootCommand()
+    new JoystickButton(driver, Button.kX.value).whenPressed(
+      intake.new ExtendIntakeCommand()
+    );
+
+    new JoystickButton(driver, Button.kY.value).whenPressed(
+      intake.new RetractIntakeCommand()
+    );
+
+    // Operator buttons
+    new JoystickButton(operator, Button.kA.value).whenPressed(
+      superStructure.new ShootCommand().withInterrupt(operator::getBButton)
     ); 
-
-    new JoystickButton(controller, Button.kX.value).whenPressed(
-      intake.extendIntake
-    );
-
-    new JoystickButton(controller, Button.kY.value).whenPressed(
-      intake.retractIntake
-    );
-
 
   }
 
