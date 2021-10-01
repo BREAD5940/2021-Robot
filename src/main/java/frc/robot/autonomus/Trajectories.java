@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj.util.Units;
  */
 public class Trajectories {
     
-    /* 8 PC auto part 1 */
+    /* 5 PC auto part 1 */
     public static Trajectory FIVE_PC_AUTO_LEFT_P1 = generateTrajectory(
         1.0,
         2.0,
@@ -32,7 +32,7 @@ public class Trajectories {
         true
     );
 
-    /* 8 PC auto part 2 */
+    /* 5 PC auto part 2 */
     public static Trajectory FIVE_PC_AUTO_LEFT_P2 = generateTrajectory(
         2.5,
         3.0,
@@ -44,6 +44,24 @@ public class Trajectories {
         ),
         true
     );
+
+    /* 6 PC auto */
+    public static Trajectory SIX_PC_AUTO_RIGHT = generateTrajectory(
+        2.0, 
+        2.5, 
+        List.of(
+            new Pose2d(Units.feetToMeters(10.961), Units.feetToMeters(21.353), Rotation2d.fromDegrees(-0.345)),
+            new Pose2d(Units.feetToMeters(13.785), Units.feetToMeters(22.663), Rotation2d.fromDegrees(1.411)),
+            new Pose2d(Units.feetToMeters(17.637), Units.feetToMeters(25.306), Rotation2d.fromDegrees(0)),
+            new Pose2d(Units.feetToMeters(23.635), Units.feetToMeters(25.793), Rotation2d.fromDegrees(1.241)),
+            new Pose2d(Units.feetToMeters(27.241), Units.feetToMeters(25.381), Rotation2d.fromDegrees(0)),
+            new Pose2d(Units.feetToMeters(24.778), Units.feetToMeters(23.659), Rotation2d.fromDegrees(-156.04)),
+            new Pose2d(Units.feetToMeters(12.139), Units.feetToMeters(19.354), Rotation2d.fromDegrees(-166.831))
+        ),        
+        true
+    );
+
+
 
     /* Method to generate a trajectory */
     private static Trajectory generateTrajectory(double maxVel, double maxAccel, List<Pose2d> waypoints, boolean clampedCubic, TrajectoryConstraint... constraints) {

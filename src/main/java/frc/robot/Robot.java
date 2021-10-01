@@ -1,12 +1,14 @@
 package frc.robot;
 import com.revrobotics.CANSparkMax.IdleMode;
+
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.autonomus.routines.FivePCAutoLeft;
+import frc.robot.autonomus.routines.SixPCAutoRight;
 
 // Robot class
 public class Robot extends TimedRobot {
@@ -20,6 +22,8 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     m_robotContainer = new RobotContainer();
     m_robotContainer.drive.reset(new Pose2d(new Translation2d(), new Rotation2d()));
+    m_robotContainer.turret.setLock();
+    CameraServer.getInstance().startAutomaticCapture(0);
   }
 
   // Robot periodic
@@ -34,7 +38,6 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().cancelAll();
     m_robotContainer.flywheel.disable();
     m_robotContainer.accelerator.disable();
-    m_robotContainer.turret.setLock();
     m_robotContainer.intake.disable();
     m_robotContainer.spindexer.disable();
   }
@@ -47,7 +50,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     m_robotContainer.drive.setIdleModes(IdleMode.kBrake);
-    new FivePCAutoLeft(m_robotContainer.superStructure, m_robotContainer.drive).schedule();
+    new SixPCAutoRight(m_robotContainer.superStructure, m_robotContainer.drive).schedule();
   }
 
   // Autonomus periodic
@@ -62,8 +65,8 @@ public class Robot extends TimedRobot {
     }
     m_robotContainer.drive.reset(new Pose2d(new Translation2d(), new Rotation2d()));
     m_robotContainer.drive.setIdleModes(IdleMode.kBrake);
-    m_robotContainer.turret.setLock();
     m_robotContainer.intake.runCompressor();
+    m_robotContainer.turret.setLock();
     m_robotContainer.superStructure.new HomingRoutine().schedule();
   }
 

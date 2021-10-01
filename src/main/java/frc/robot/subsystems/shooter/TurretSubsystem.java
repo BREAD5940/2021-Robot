@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj.MedianFilter;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
-import frc.robot.commons.BreadUtil;
 
 // /**
 //  * Turret subsystem
@@ -167,29 +166,17 @@ import frc.robot.commons.BreadUtil;
     }
 
     public void setTrack() {
-        mode = TurretOutput.kTrack;  
+        mode = TurretOutput.kTrack; 
     }
 
-    public void setTrackMeasurement(double measurement) {
+    public void addVisionSamples(double measurement) {
         trackMeasurement = filter.calculate(measurement);
-    }
-
-    public void setLockMeasurement(double measurement) {
-        lockMeasurement = MathUtil.clamp(measurement, -180, 180);
-    }
-
-    public double getAngle() {
-        return -BreadUtil.angleTo180Range(encoder.getDistance()-offset);
-    }
-
-    public double getRawAngle() {
-        return -BreadUtil.angleTo180Range(encoder.getDistance());
     }
 
     @Override
     public void periodic() {
         if (mode==TurretOutput.kLock) {
-            double output = MathUtil.clamp(pid.calculate(getRawAngle(), lockMeasurement), -2, 2);
+            double output = MathUtil.clamp(-pid.calculate(encoder.getDistance(), lockMeasurement), -2, 2);
             motor.setVoltage(output);
         } else {
             double output = MathUtil.clamp(-pid.calculate(trackMeasurement, 0.0), -1, 1);

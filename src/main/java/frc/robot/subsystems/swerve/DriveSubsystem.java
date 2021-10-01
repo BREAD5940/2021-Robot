@@ -197,6 +197,7 @@ public class DriveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         updateOdometry();
+        SmartDashboard.putNumber("Heading", pose.getRotation().getDegrees());
     }
 
     /* Output enum */

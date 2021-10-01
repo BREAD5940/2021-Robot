@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Vision extends SubsystemBase {
 
     // Variables
-    private final PhotonCamera camera = new PhotonCamera("BreadCam");
+    public final PhotonCamera camera = new PhotonCamera("BreadCam");
     private final double cameraHeightMeters = 0.51;
     private final double targetHeightMeters = 2.5;
     private final double cameraPitchRadians = Units.degreesToRadians(31.0);

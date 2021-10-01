@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import java.util.function.Function;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
@@ -57,7 +58,7 @@ public class SuperStructure extends SubsystemBase {
         if (visionSupplier.hasTarget()) {
             hood.setPositionReference(InterpolatingTable.get(visionSupplier.getDistance()).hoodAngle);
             flywheel.setReference(InterpolatingTable.get(visionSupplier.getDistance()).rpm);
-            turret.setTrackMeasurement(visionSupplier.getYaw());
+            turret.addVisionSamples(visionSupplier.getYaw());
         } else {
             hood.setPositionReference(0.0);
             flywheel.setReference(4000.0);
@@ -148,6 +149,17 @@ public class SuperStructure extends SubsystemBase {
                 new InstantCommand(SuperStructure.this::disable)
             );
         }
+    }
+
+    /* Add values to smart dashboard in the periodic method */
+    @Override
+    public void periodic() {
+        SmartDashboard.putNumber("Spindexer Angle", spindexer.getDistance());
+
+        SmartDashboard.putBoolean("Flywheel at Reference", flywheel.atReference());
+        SmartDashboard.putBoolean("Hood at Reference", hood.atPositionReference());
+        SmartDashboard.putBoolean("Spindexer at Reference", spindexer.atPositionReference());
+        SmartDashboard.putBoolean("Accelerator at Reference", accelerator.atReference());
     }
     
 }
