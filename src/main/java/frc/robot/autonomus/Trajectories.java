@@ -20,7 +20,9 @@ import edu.wpi.first.wpilibj.util.Units;
  */
 public class Trajectories {
     
-    /* 5 PC auto part 1 */
+    /**
+     * FIVE POWER CELL AUTO LEFT
+     */
     public static Trajectory FIVE_PC_AUTO_LEFT_P1 = generateTrajectory(
         1.0,
         2.0,
@@ -32,7 +34,6 @@ public class Trajectories {
         true
     );
 
-    /* 5 PC auto part 2 */
     public static Trajectory FIVE_PC_AUTO_LEFT_P2 = generateTrajectory(
         2.5,
         3.0,
@@ -45,7 +46,9 @@ public class Trajectories {
         true
     );
 
-    /* 6 PC auto */
+    /**
+     * SIX POWERCELL AUTO RIGHT
+     */
     public static Trajectory SIX_PC_AUTO_RIGHT = generateTrajectory(
         2.0, 
         2.5, 
@@ -58,6 +61,22 @@ public class Trajectories {
             new Pose2d(Units.feetToMeters(24.778), Units.feetToMeters(23.659), Rotation2d.fromDegrees(-156.04)),
             new Pose2d(Units.feetToMeters(12.139), Units.feetToMeters(19.354), Rotation2d.fromDegrees(-166.831))
         ),        
+        true
+    );
+
+    /**
+     * EIGHT POWERCELL AUTO RIGHT
+     */
+    public static Trajectory EIGHT_PC_AUTO_RIGHT_P1 = generateTrajectory(
+        2.0, 
+        2.5,
+        List.of(
+            new Pose2d(Units.feetToMeters(10.961), Units.feetToMeters(21.353), Rotation2d.fromDegrees(-0.345)),
+            new Pose2d(Units.feetToMeters(15.856), Units.feetToMeters(21.727), Rotation2d.fromDegrees(-61.064)),
+            new Pose2d(Units.feetToMeters(19.315), Units.feetToMeters(20.44), Rotation2d.fromDegrees(-75.576)),
+            new Pose2d(Units.feetToMeters(21.136), Units.feetToMeters(16.846), Rotation2d.fromDegrees(-68.69)),
+            new Pose2d(Units.feetToMeters(19.101), Units.feetToMeters(20.702), Rotation2d.fromDegrees(135.936))
+        ), 
         true
     );
 

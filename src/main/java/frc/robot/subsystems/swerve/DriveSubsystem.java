@@ -248,11 +248,12 @@ public class DriveSubsystem extends SubsystemBase {
 
         private final Timer timer = new Timer();
         private final Trajectory trajectory;
-        private final Rotation2d startHeading;
+        private final Rotation2d startHeading, refHeading;
 
-        public TrajectoryFollowerCommand(Trajectory trajectory, Rotation2d startHeading) {
+        public TrajectoryFollowerCommand(Trajectory trajectory, Rotation2d startHeading, Rotation2d refHeading) {
             this.trajectory = trajectory;
             this.startHeading = startHeading;
+            this.refHeading = refHeading;
             addRequirements(DriveSubsystem.this);
         }   
         
@@ -267,7 +268,7 @@ public class DriveSubsystem extends SubsystemBase {
         @Override
         public void execute() {
             State poseRef = trajectory.sample(timer.get());
-            ChassisSpeeds adjustedSpeeds = autoController.calculate(DriveSubsystem.this.getPose(), poseRef, startHeading);
+            ChassisSpeeds adjustedSpeeds = autoController.calculate(DriveSubsystem.this.getPose(), poseRef, refHeading);
             DriveSubsystem.this.setSpeeds(
                 adjustedSpeeds.vxMetersPerSecond, 
                 adjustedSpeeds.vyMetersPerSecond, 

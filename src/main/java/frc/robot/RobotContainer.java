@@ -3,9 +3,13 @@ package frc.robot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.autonomus.routines.EightPCAutoRight;
+import frc.robot.autonomus.routines.FivePCAutoLeft;
+import frc.robot.autonomus.routines.SixPCAutoRight;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.shooter.*;
@@ -43,9 +47,13 @@ public class RobotContainer {
     vision.visionSupplier
   );
 
+  // Autonomus Chooser
+  SendableChooser<SequentialCommandGroup> autoChooser = new SendableChooser<>();
+
   // Constructor
   public RobotContainer() {
     configureButtonBindings();
+    configureAutoChooser();
     drive.setDefaultCommand(drive. new DefaultDriveCommand(driver::getX, driver::getY));
     superStructure.setDefaultCommand(superStructure.new IdleCommand(driver::getTriggerAxis));
   }
@@ -70,11 +78,18 @@ public class RobotContainer {
     new JoystickButton(operator, Button.kA.value).whenPressed(
       superStructure.new ShootCommand().withInterrupt(operator::getBButton)
     ); 
+    
+  }
 
+  // Method to configure autonomus chooser 
+  private void configureAutoChooser() {
+    autoChooser.setDefaultOption("Six PC Auto (Right)", new SixPCAutoRight(superStructure, drive));
+    autoChooser.addOption("Five PC Auto (Left)", new FivePCAutoLeft(superStructure, drive));
+    autoChooser.addOption("Eight PC Auto (Right)", new EightPCAutoRight(superStructure, drive));
   }
 
   // Method to get the autonomus command
-  public Command getAutonomousCommand() {
-    return null;
+  public SequentialCommandGroup getAutonomousCommand() {
+    return autoChooser.getSelected();
   }
 }

@@ -155,6 +155,7 @@ public class SuperStructure extends SubsystemBase {
     @Override
     public void periodic() {
         SmartDashboard.putNumber("Spindexer Angle", spindexer.getDistance());
+        SmartDashboard.putNumber("Turret Angle", turret.encoder.getDistance());
 
         SmartDashboard.putBoolean("Flywheel at Reference", flywheel.atReference());
         SmartDashboard.putBoolean("Hood at Reference", hood.atPositionReference());

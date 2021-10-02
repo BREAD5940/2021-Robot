@@ -151,14 +151,14 @@ import edu.wpi.first.wpiutil.math.MathUtil;
     public final DutyCycleEncoder encoder = new DutyCycleEncoder(1);
     private final PIDController pid = new PIDController(0.05, 0.0, 0.001);
     private final MedianFilter filter = new MedianFilter(5);
-    TurretOutput mode = TurretOutput.kLock;
+    TurretOutput mode = TurretOutput.KDisabled;
     double lockMeasurement;
     double trackMeasurement;
 
     public TurretSubsystem() {
         pid.setTolerance(2);
         encoder.setDistancePerRotation(360.0);
-        lockMeasurement = encoder.getDistance();
+        lockMeasurement = encoder.getDistance() + 90.0;
     }
 
     public void setLock() {
@@ -173,6 +173,10 @@ import edu.wpi.first.wpiutil.math.MathUtil;
         trackMeasurement = filter.calculate(measurement);
     }
 
+    public boolean atReference() {
+        return pid.atSetpoint()&&mode==TurretOutput.kLock ? true : false;
+    }
+
     @Override
     public void periodic() {
         if (mode==TurretOutput.kLock) {
@@ -185,7 +189,7 @@ import edu.wpi.first.wpiutil.math.MathUtil;
     }
 
     public enum TurretOutput {
-        kLock, kTrack
+        kLock, kTrack, KDisabled
     }
     
 
